@@ -142,7 +142,7 @@
 
 
                         {{-- Login Form --}}
-                        <form action="#" method="POST">
+                       <form action="{{ route('login.authenticate') }}" method="POST">
 
                             @csrf
 
