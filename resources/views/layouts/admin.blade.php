@@ -10,7 +10,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-slate-100">
+<body class="bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-white">
 
     <div class="flex min-h-screen">
 
