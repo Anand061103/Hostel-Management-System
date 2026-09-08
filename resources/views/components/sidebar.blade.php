@@ -20,8 +20,8 @@
             <span>Dashboard</span>
         </a>
 
-        <a href="#"
-           class="mb-2 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white">
+       <a href="{{ route('students.index') }}"
+           class="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-slate-300 transition hover:bg-slate-800 hover:text-white">
             <span>👨‍🎓</span>
             <span>Students</span>
         </a>
