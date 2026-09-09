@@ -14,20 +14,24 @@
             Main Menu
         </p>
 
-        <a href="{{ route('dashboard') }}"
-           class="mb-2 flex items-center gap-3 rounded-lg bg-blue-600 px-4 py-3 text-sm font-medium">
+                <a href="{{ route('dashboard') }}"
+        class="mb-2 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium
+        {{ request()->routeIs('dashboard') ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
             <span>📊</span>
             <span>Dashboard</span>
         </a>
 
-       <a href="{{ route('students.index') }}"
-           class="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-slate-300 transition hover:bg-slate-800 hover:text-white">
+            <a href="{{ route('students.index') }}"
+        class="mb-2 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium
+        {{ request()->routeIs('students.*') ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
             <span>👨‍🎓</span>
             <span>Students</span>
         </a>
+        
 
-        <a href="#"
-           class="mb-2 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white">
+            <a href="{{ route('rooms.index') }}"
+        class="mb-2 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium
+        {{ request()->routeIs('rooms.*') ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
             <span>🚪</span>
             <span>Rooms</span>
         </a>
