@@ -1,7 +1,8 @@
 <?php
 
 namespace App\Models;
-
+use App\Models\BedAssignment;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
 
 class Student extends Model
@@ -24,4 +25,10 @@ class Student extends Model
             'joining_date' => 'date',
         ];
     }
+
+    public function bedAssignments(): HasMany
+{
+    return $this->hasMany(BedAssignment::class);
+}
+
 }

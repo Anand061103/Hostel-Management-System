@@ -75,9 +75,12 @@
         @forelse($rooms as $room)
 
             {{-- Room Card --}}
-            <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm
-                        transition hover:-translate-y-1 hover:shadow-md
-                        dark:border-slate-700 dark:bg-slate-800 dark:shadow-none">
+            <a href="{{ route('rooms.show', $room) }}"
+               class="group block rounded-xl border border-slate-200 bg-white p-5 shadow-sm
+                      transition hover:-translate-y-1 hover:shadow-md
+                      dark:border-slate-700 dark:bg-slate-800
+                      dark:hover:border-blue-500 dark:hover:shadow-none">
+
 
                 {{-- Room Header --}}
                 <div class="flex items-start justify-between">
@@ -93,7 +96,7 @@
                     </div>
 
 
-                    {{-- Status --}}
+                    {{-- Room Status --}}
                     @if($room->status === 'active')
 
                         <span class="rounded-full bg-green-100 px-3 py-1 text-xs
@@ -120,14 +123,18 @@
 
                     @foreach($room->beds as $bed)
 
-                        <div class="flex flex-col items-center">
+                        <div class="group/bed relative flex flex-col items-center">
 
+
+                            {{-- Available Bed --}}
                             @if($bed->status === 'available')
 
                                 <div class="flex h-16 w-16 items-center justify-center
                                             rounded-xl bg-green-100 text-4xl
                                             dark:bg-green-500/10">
+
                                     🛏️
+
                                 </div>
 
                                 <span class="mt-2 text-xs font-semibold text-green-600
@@ -139,12 +146,16 @@
                                     Available
                                 </span>
 
+
+                            {{-- Occupied / Other --}}
                             @else
 
                                 <div class="flex h-16 w-16 items-center justify-center
                                             rounded-xl bg-slate-100 text-4xl opacity-40
                                             dark:bg-slate-700">
+
                                     🛏️
+
                                 </div>
 
                                 <span class="mt-2 text-xs font-semibold text-slate-400">
@@ -156,6 +167,98 @@
                                 </span>
 
                             @endif
+
+
+                            {{-- Bed Hover Tooltip --}}
+                            <div class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-3
+                                        hidden w-52 -translate-x-1/2 rounded-lg
+                                        bg-slate-900 p-3 text-left text-xs text-white
+                                        shadow-xl group-hover/bed:block">
+
+
+                                {{-- Bed Name --}}
+                                <p class="text-sm font-semibold">
+                                    Bed {{ $bed->bed_number }}
+                                </p>
+
+
+                                {{-- Available --}}
+                                @if($bed->status === 'available')
+
+                                    <p class="mt-1 text-green-400">
+                                        ● Available
+                                    </p>
+
+                                    <p class="mt-1 text-slate-400">
+                                        No student assigned
+                                    </p>
+
+
+                                {{-- Occupied --}}
+                                @else
+
+                                    <p class="mt-1 text-red-400">
+                                        ● Occupied
+                                    </p>
+
+
+                                    @if($bed->currentAssignment && $bed->currentAssignment->student)
+
+                                        <div class="mt-2 border-t border-slate-700 pt-2">
+
+                                            <p class="text-slate-400">
+                                                Student
+                                            </p>
+
+                                            <p class="font-medium text-white">
+                                                {{ $bed->currentAssignment->student->full_name }}
+                                            </p>
+
+
+                                            <p class="mt-2 text-slate-400">
+                                                Since
+                                            </p>
+
+                                            <p>
+                                                {{ $bed->currentAssignment->start_date->format('d M Y') }}
+                                            </p>
+
+
+                                            @if($bed->currentAssignment->end_date)
+
+                                                <p class="mt-2 text-slate-400">
+                                                    Until
+                                                </p>
+
+                                                <p>
+                                                    {{ $bed->currentAssignment->end_date->format('d M Y') }}
+                                                </p>
+
+                                            @else
+
+                                                <p class="mt-2 text-slate-400">
+                                                    Until
+                                                </p>
+
+                                                <p>
+                                                    Currently
+                                                </p>
+
+                                            @endif
+
+                                        </div>
+
+                                    @else
+
+                                        <p class="mt-2 text-slate-400">
+                                            Student information unavailable.
+                                        </p>
+
+                                    @endif
+
+                                @endif
+
+                            </div>
 
                         </div>
 
@@ -189,7 +292,7 @@
 
                 </div>
 
-            </div>
+            </a>
 
         @empty
 

@@ -20,3 +20,5 @@ Route::delete('/students/bulk-delete', [StudentController::class, 'bulkDestroy']
 Route::resource('students', StudentController::class)->middleware('auth');
 Route::resource('rooms', RoomController::class);
 
+Route::post('/beds/{bed}/assign', [RoomController::class, 'assignStudent'])->name('beds.assign');
+Route::post('/beds/{bed}/checkout', [RoomController::class, 'checkoutStudent'])->name('beds.checkout');
