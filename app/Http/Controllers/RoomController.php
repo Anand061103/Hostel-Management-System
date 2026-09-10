@@ -138,32 +138,55 @@ class RoomController extends Controller
     }
 
 
-        public function show(Room $room)
-        {
-            $room->load([
-                'beds.currentAssignment.student',
-            ]);
+       public function show(Room $room)
+{
+    $room->load([
+        'beds.currentAssignment.student',
+    ]);
 
-            $students = Student::whereDoesntHave('bedAssignments', function ($query) {
-                $query->whereNull('end_date');
-            })
-            ->orderBy('full_name')
-            ->get();
+    $students = Student::whereDoesntHave('bedAssignments', function ($query) {
+        $query->where(function ($q) {
+            $q->whereNull('end_date')
+              ->orWhereDate('end_date', '>=', now()->toDateString());
+        });
+    })
+    ->orderBy('full_name')
+    ->get();
 
-            return view('rooms.show', compact('room', 'students'));
-       }
+    return view('rooms.show', compact('room', 'students'));
+}
 
+   public function edit(Room $room)
+{
+    $floors = [
+        0 => 'Ground Floor',
+        1 => 'First Floor',
+        2 => 'Second Floor',
+        3 => 'Third Floor',
+        4 => 'Fourth Floor',
+        5 => 'Fifth Floor',
+    ];
 
-    public function edit(Room $room)
-    {
-        //
-    }
+    return view('rooms.edit', compact('room', 'floors'));
+}
 
 
     public function update(Request $request, Room $room)
-    {
-        //
-    }
+{
+    $validated = $request->validate([
+        'room_type' => ['required', 'string', 'max:50'],
+        'status' => ['required', 'in:active,inactive'],
+    ]);
+
+    $room->update([
+        'room_type' => $validated['room_type'],
+        'status' => $validated['status'],
+    ]);
+
+    return redirect()
+        ->route('rooms.show', $room)
+        ->with('success', 'Room updated successfully.');
+}
 
 
     public function destroy(Room $room)
@@ -179,15 +202,23 @@ class RoomController extends Controller
         'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
     ]);
 
-    // Bed already occupied hai
-    if ($bed->status !== 'available') {
-        return back()->with('error', 'This bed is not available.');
-    }
+    $bed->load('room');
+
+if ($bed->room->status !== 'active') {
+    return back()->with('error', 'This room is inactive. Students cannot be assigned.');
+}
+
+if ($bed->status !== 'available') {
+    return back()->with('error', 'This bed is not available.');
+}
 
     // Student already kisi active bed par assigned hai
-    $alreadyAssigned = BedAssignment::where('student_id', $validated['student_id'])
-        ->whereNull('end_date')
-        ->exists();
+   $alreadyAssigned = BedAssignment::where('student_id', $validated['student_id'])
+    ->where(function ($query) {
+        $query->whereNull('end_date')
+              ->orWhereDate('end_date', '>=', now()->toDateString());
+    })
+    ->exists();
 
     if ($alreadyAssigned) {
         return back()->with('error', 'This student is already assigned to a bed.');

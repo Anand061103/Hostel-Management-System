@@ -115,7 +115,20 @@
                         <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
                             Email
                         </th>
+                        {{-- Room --}}
+                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
+                            Room
+                        </th>
 
+                        {{-- Bed --}}
+                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
+                            Bed
+                        </th>
+
+                        {{-- Check-in --}}
+                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
+                            Check-in
+                        </th>
 
                         {{-- Mobile --}}
                         <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -203,12 +216,39 @@
                                 {{ $student->email ?? '—' }}
                             </td>
 
+ {{-- Room --}}
+                                <td class="px-6 py-4 text-slate-600 dark:text-slate-300">
+                                    @if ($student->currentAssignment)
+                                        {{ $student->currentAssignment->bed->room->room_number }}
+                                    @else
+                                        —
+                                    @endif
+                                </td>
 
+                                {{-- Bed --}}
+                                <td class="px-6 py-4 text-slate-600 dark:text-slate-300">
+                                    @if ($student->currentAssignment)
+                                        <span class="font-medium">
+                                            Bed {{ $student->currentAssignment->bed->bed_number }}
+                                        </span>
+                                    @else
+                                        —
+                                    @endif
+                                </td>
+
+                                {{-- Check-in --}}
+                                <td class="px-6 py-4 text-slate-600 dark:text-slate-300">
+                                    @if ($student->currentAssignment)
+                                        {{ $student->currentAssignment->start_date->format('d M Y') }}
+                                    @else
+                                        —
+                                    @endif
+                                </td>
                             {{-- Mobile --}}
                             <td class="px-6 py-4 text-slate-600 dark:text-slate-300">
                                 {{ $student->mobile_number }}
                             </td>
-
+                               
 
                             {{-- Joining Date --}}
                             <td class="px-6 py-4 text-slate-600 dark:text-slate-300">
@@ -284,7 +324,7 @@
 
                         <tr>
 
-                            <td colspan="8" class="px-6 py-12 text-center">
+                            <td colspan="11" class="px-6 py-12 text-center">
 
                                 <p class="text-lg font-semibold text-slate-600 dark:text-slate-300">
                                     No students found

@@ -1,5 +1,6 @@
-<aside class="flex w-64 shrink-0 flex-col bg-slate-900 text-white">
-    {{-- Logo --}}
+<aside class="fixed left-0 top-0 flex h-screen w-64 shrink-0
+              flex-col bg-slate-900 text-white">   
+               {{-- Logo --}}
     <div class="flex h-20 items-center border-b border-slate-800 px-6">
         <div>
             <h1 class="text-xl font-bold">Hostel<span class="text-blue-400">MS</span></h1>
@@ -42,8 +43,9 @@
             <span>Beds</span>
         </a>
 
-        <a href="#"
-           class="mb-2 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white">
+            <a href="{{ route('fees.index') }}"
+            class="mb-2 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium
+                text-slate-300 transition hover:bg-slate-800 hover:text-white">
             <span>💰</span>
             <span>Fees</span>
         </a>

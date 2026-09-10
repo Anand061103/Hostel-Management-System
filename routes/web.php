@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\FeeController;
 use App\Http\Controllers\RoomController;
 
 Route::get('/signup', function () {return view('auth.signup');})->name('signup');
@@ -22,3 +23,5 @@ Route::resource('rooms', RoomController::class);
 
 Route::post('/beds/{bed}/assign', [RoomController::class, 'assignStudent'])->name('beds.assign');
 Route::post('/beds/{bed}/checkout', [RoomController::class, 'checkoutStudent'])->name('beds.checkout');
+
+Route::resource('fees', FeeController::class);

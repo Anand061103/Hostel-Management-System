@@ -11,13 +11,16 @@ class StudentController extends Controller
     /**
      * Display a listing of students.
      */
-    public function index()
-    {
-        $students = Student::latest()->paginate(10);
+   public function index()
+{
+    $students = Student::with([
+        'currentAssignment.bed.room'
+    ])
+    ->latest()
+    ->paginate(10);
 
-        return view('students.index', compact('students'));
-    }
-
+    return view('students.index', compact('students'));
+}
 
     /**
      * Show the form for creating a new student.

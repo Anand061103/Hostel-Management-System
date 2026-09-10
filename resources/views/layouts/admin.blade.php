@@ -24,7 +24,7 @@
             @include('components.navbar')
 
             {{-- Page Content --}}
-            <main class="flex-1">
+            <main class="ml-64">
                 @yield('content')
             </main>
 

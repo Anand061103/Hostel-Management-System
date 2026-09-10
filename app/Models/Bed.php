@@ -36,8 +36,10 @@ public function assignments(): HasMany
 public function currentAssignment()
 {
     return $this->hasOne(BedAssignment::class)
-        ->whereNull('end_date')
-        ->latestOfMany();
+        ->where(function ($query) {
+            $query->whereNull('end_date')
+                  ->orWhereDate('end_date', '>=', now()->toDateString());
+        });
 }
 
 

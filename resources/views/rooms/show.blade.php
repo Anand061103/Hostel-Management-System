@@ -205,13 +205,20 @@
                             Ready for assignment
                         </p>
 
-                        <button type="button"
-                            onclick="openAssignModal({{ $bed->id }}, '{{ $bed->bed_number }}')"
-                            class="mt-4 w-full rounded-lg bg-blue-600 px-4 py-2.5
-                                text-xs font-medium text-white
-                                hover:bg-blue-700">
-                        Assign Student
-                    </button>
+                         @if($room->status === 'active')
+                                <button type="button"
+                                        onclick="openAssignModal({{ $bed->id }}, '{{ $bed->bed_number }}')"
+                                        class="mt-4 w-full rounded-lg bg-blue-600 px-4 py-2.5
+                                            text-xs font-medium text-white hover:bg-blue-700">
+                                    Assign Student
+                                </button>
+                            @else
+                                <div class="mt-4 rounded-lg bg-slate-200 px-4 py-2.5
+                                            text-center text-xs font-medium text-slate-500
+                                            dark:bg-slate-700 dark:text-slate-400">
+                                    Room Inactive
+                                </div>
+                            @endif
 
 
                     @elseif($bed->status === 'occupied')
