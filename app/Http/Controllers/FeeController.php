@@ -42,9 +42,11 @@ class FeeController extends Controller
      * Show the form for creating a new resource.
      */
     public function create()
-    {
-        //
-    }
+{
+    $students = \App\Models\Student::orderBy('full_name')->get();
+
+    return view('fees.create', compact('students'));
+}
 
     /**
      * Store a newly created resource in storage.
