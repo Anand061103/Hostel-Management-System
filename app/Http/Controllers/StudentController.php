@@ -9,8 +9,9 @@ use App\Models\Bed;
 use App\Models\BedAssignment;
 use App\Models\Fee;
 use App\Models\FeePayment;
-use App\Models\SecurityDeposit;
 use Illuminate\Support\Facades\DB;
+use App\Models\SecurityPayment;
+use App\Models\SecurityDeposit;
 class StudentController extends Controller
 {
     /**
@@ -284,23 +285,43 @@ class StudentController extends Controller
         */
 
         $securityRequired = $data['security_required'];
-        $securityPaid = $data['security_paid'] ?? 0;
+$securityPaid = $data['security_paid'] ?? 0;
 
-        $securityStatus = 'pending';
+$securityStatus = 'pending';
 
-        if ($securityPaid >= $securityRequired) {
-            $securityStatus = 'held';
-        }
+if ($securityPaid >= $securityRequired) {
+    $securityStatus = 'held';
+}
 
-        SecurityDeposit::create([
-            'student_id' => $student->id,
-            'required_amount' => $securityRequired,
-            'paid_amount' => $securityPaid,
-            'status' => $securityStatus,
-            'received_date' => $securityPaid > 0
-                ? ($data['security_received_date'] ?? $data['joining_date'])
-                : null,
-        ]);
+$securityDeposit = SecurityDeposit::create([
+    'student_id' => $student->id,
+    'required_amount' => $securityRequired,
+    'paid_amount' => $securityPaid,
+    'status' => $securityStatus,
+    'received_date' => $securityPaid > 0
+        ? ($data['security_received_date'] ?? $data['joining_date'])
+        : null,
+]);
+
+
+/*
+|--------------------------------------------------------------------------
+| Security Payment History
+|--------------------------------------------------------------------------
+*/
+
+if ($securityPaid > 0) {
+
+    SecurityPayment::create([
+        'security_deposit_id' => $securityDeposit->id,
+        'amount' => $securityPaid,
+        'payment_date' => $data['security_received_date']
+            ?? $data['joining_date'],
+        'payment_method' => $data['payment_method'] ?? 'cash',
+        'reference_no' => null,
+        'notes' => 'Security deposit received during admission.',
+    ]);
+}
 
 
         /*

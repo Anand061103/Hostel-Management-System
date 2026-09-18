@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\Student;
 use App\Models\SecuritySettlement;
+use App\Models\SecurityPayment;
 class SecurityDeposit extends Model
 {
     protected $fillable = [
@@ -27,9 +28,24 @@ class SecurityDeposit extends Model
     {
         return $this->belongsTo(Student::class);
     }
-
+    public function getRemainingAmountAttribute()
+    {
+        return max(
+            0,
+            $this->required_amount - $this->paid_amount
+        );
+    }
     public function settlements(): HasMany
     {
         return $this->hasMany(SecuritySettlement::class);
     }
+
+    public function payments(): HasMany
+{
+    return $this->hasMany(SecurityPayment::class);
 }
+
+
+
+}
+

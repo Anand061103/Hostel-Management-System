@@ -50,6 +50,15 @@
             <span>Fees</span>
         </a>
 
+            <a href="{{ route('security-deposits.index') }}"
+            class="mb-2 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium
+                    text-slate-300 transition hover:bg-slate-800 hover:text-white">
+
+                <span>🔐</span>
+                <span>Security Deposit</span>
+
+            </a>
+            
         <a href="#"
            class="mb-2 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white">
             <span>⚠️</span>

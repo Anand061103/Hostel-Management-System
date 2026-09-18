@@ -1,52 +1,42 @@
 @extends('layouts.admin')
 
-@section('title', 'Fees')
+@section('title', 'Security Deposits')
 
 @section('content')
 
 <div class="p-6">
 
     {{-- Header --}}
-    <div class="mb-6 flex items-center justify-between">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-slate-800 dark:text-white">
+            Security Deposits
+        </h1>
 
-        <div>
-            <h1 class="text-2xl font-bold text-slate-800 dark:text-white">
-                Fees
-            </h1>
-
-            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                Manage student fees and payments
-            </p>
-        </div>
-
-        <a href="{{ route('fees.create') }}"
-           class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold
-                  text-white hover:bg-blue-700">
-            + Add Fee
-        </a>
-
+        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Manage student security deposits and balances
+        </p>
     </div>
 
 
     {{-- Summary Cards --}}
     <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
 
-        {{-- Total Fees --}}
+        {{-- Total Required --}}
         <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm
                     dark:border-slate-700 dark:bg-slate-800">
 
             <p class="text-sm font-medium text-slate-500 dark:text-slate-400">
-                Total Fees
+                Total Required
             </p>
 
             <p class="mt-2 text-2xl font-bold text-slate-800 dark:text-white">
-                ₹{{ number_format($totalFeeAmount, 2) }}
+                ₹{{ number_format($totalRequired, 2) }}
             </p>
 
         </div>
 
 
-        {{-- Total Paid --}}
+        {{-- Total Collected --}}
         <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm
                     dark:border-slate-700 dark:bg-slate-800">
 
@@ -76,16 +66,16 @@
         </div>
 
 
-        {{-- Pending Fees --}}
+        {{-- Pending Deposits --}}
         <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm
                     dark:border-slate-700 dark:bg-slate-800">
 
             <p class="text-sm font-medium text-slate-500 dark:text-slate-400">
-                Pending Fees
+                Pending Deposits
             </p>
 
             <p class="mt-2 text-2xl font-bold text-amber-600 dark:text-amber-400">
-                {{ $pendingFees }}
+                {{ $pendingDeposits }}
             </p>
 
         </div>
@@ -96,11 +86,13 @@
     {{-- Success Message --}}
     @if(session('success'))
 
-        <div class="mb-4 rounded-lg border border-emerald-200 bg-emerald-50
-                    px-4 py-3 text-sm text-emerald-700
+        <div class="mb-4 rounded-lg border border-emerald-200
+                    bg-emerald-50 px-4 py-3 text-sm text-emerald-700
                     dark:border-emerald-900 dark:bg-emerald-900/20
                     dark:text-emerald-400">
+
             {{ session('success') }}
+
         </div>
 
     @endif
@@ -109,17 +101,19 @@
     {{-- Error Message --}}
     @if(session('error'))
 
-        <div class="mb-4 rounded-lg border border-red-200 bg-red-50
-                    px-4 py-3 text-sm text-red-700
+        <div class="mb-4 rounded-lg border border-red-200
+                    bg-red-50 px-4 py-3 text-sm text-red-700
                     dark:border-red-900 dark:bg-red-900/20
                     dark:text-red-400">
+
             {{ session('error') }}
+
         </div>
 
     @endif
 
 
-    {{-- Fees Table --}}
+    {{-- Security Deposit Table --}}
     <div class="overflow-hidden rounded-xl border border-slate-200
                 bg-white shadow-sm
                 dark:border-slate-800 dark:bg-slate-900">
@@ -128,7 +122,6 @@
 
             <table class="w-full text-left text-sm">
 
-                {{-- Header --}}
                 <thead class="bg-slate-50 dark:bg-slate-800">
 
                     <tr>
@@ -140,12 +133,7 @@
 
                         <th class="px-6 py-4 text-xs font-semibold uppercase
                                    tracking-wider text-slate-500">
-                            Fee Type
-                        </th>
-
-                        <th class="px-6 py-4 text-xs font-semibold uppercase
-                                   tracking-wider text-slate-500">
-                            Amount
+                            Required
                         </th>
 
                         <th class="px-6 py-4 text-xs font-semibold uppercase
@@ -156,11 +144,6 @@
                         <th class="px-6 py-4 text-xs font-semibold uppercase
                                    tracking-wider text-slate-500">
                             Remaining
-                        </th>
-
-                        <th class="px-6 py-4 text-xs font-semibold uppercase
-                                   tracking-wider text-slate-500">
-                            Due Date
                         </th>
 
                         <th class="px-6 py-4 text-xs font-semibold uppercase
@@ -178,10 +161,9 @@
                 </thead>
 
 
-                {{-- Body --}}
                 <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
 
-                    @forelse($fees as $fee)
+                    @forelse($securityDeposits as $securityDeposit)
 
                         <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50">
 
@@ -196,17 +178,27 @@
                                                 text-blue-600
                                                 dark:bg-blue-900/30
                                                 dark:text-blue-400">
-                                        {{ strtoupper(substr($fee->student->full_name, 0, 1)) }}
+
+                                        {{ strtoupper(
+                                            substr($securityDeposit->student->full_name, 0, 1)
+                                        ) }}
+
                                     </div>
 
                                     <div>
 
-                                        <p class="font-semibold text-slate-800 dark:text-white">
-                                            {{ $fee->student->full_name }}
+                                        <p class="font-semibold text-slate-800
+                                                  dark:text-white">
+
+                                            {{ $securityDeposit->student->full_name }}
+
                                         </p>
 
-                                        <p class="text-xs text-slate-500 dark:text-slate-400">
-                                            ID: {{ $fee->student->id }}
+                                        <p class="text-xs text-slate-500
+                                                  dark:text-slate-400">
+
+                                            ID: {{ $securityDeposit->student->id }}
+
                                         </p>
 
                                     </div>
@@ -216,66 +208,64 @@
                             </td>
 
 
-                            {{-- Fee Type --}}
-                            <td class="px-6 py-4 text-slate-600 dark:text-slate-300">
-                                {{ $fee->fee_type }}
-                            </td>
+                            {{-- Required --}}
+                            <td class="px-6 py-4 font-medium text-slate-800
+                                       dark:text-white">
 
+                                ₹{{ number_format(
+                                    $securityDeposit->required_amount,
+                                    2
+                                ) }}
 
-                            {{-- Amount --}}
-                            <td class="px-6 py-4 font-medium text-slate-800 dark:text-white">
-                                ₹{{ number_format($fee->amount, 2) }}
                             </td>
 
 
                             {{-- Paid --}}
-                            <td class="px-6 py-4 font-medium text-emerald-600 dark:text-emerald-400">
-                                ₹{{ number_format($fee->paid_amount, 2) }}
+                            <td class="px-6 py-4 font-medium text-emerald-600
+                                       dark:text-emerald-400">
+
+                                ₹{{ number_format(
+                                    $securityDeposit->paid_amount,
+                                    2
+                                ) }}
+
                             </td>
 
 
                             {{-- Remaining --}}
                             <td class="px-6 py-4 font-medium
-                                       {{ $fee->remaining_amount > 0
+                                       {{ $securityDeposit->remaining_amount > 0
                                             ? 'text-red-600 dark:text-red-400'
                                             : 'text-emerald-600 dark:text-emerald-400' }}">
-                                ₹{{ number_format($fee->remaining_amount, 2) }}
-                            </td>
 
+                                ₹{{ number_format(
+                                    $securityDeposit->remaining_amount,
+                                    2
+                                ) }}
 
-                            {{-- Due Date --}}
-                            <td class="px-6 py-4 text-slate-600 dark:text-slate-300">
-                                {{ $fee->due_date->format('d M Y') }}
                             </td>
 
 
                             {{-- Status --}}
                             <td class="px-6 py-4">
 
-                                @if($fee->remaining_amount <= 0)
+                                @if($securityDeposit->remaining_amount <= 0)
 
-                                    <span class="rounded-full bg-emerald-100 px-3 py-1
-                                                 text-xs font-medium text-emerald-700
+                                    <span class="rounded-full bg-emerald-100
+                                                 px-3 py-1 text-xs font-medium
+                                                 text-emerald-700
                                                  dark:bg-emerald-900/30
                                                  dark:text-emerald-400">
-                                        Paid
-                                    </span>
-
-                                @elseif($fee->paid_amount > 0)
-
-                                    <span class="rounded-full bg-amber-100 px-3 py-1
-                                                 text-xs font-medium text-amber-700
-                                                 dark:bg-amber-900/30
-                                                 dark:text-amber-400">
-                                        Partial
+                                        Held
                                     </span>
 
                                 @else
 
-                                    <span class="rounded-full bg-red-100 px-3 py-1
-                                                 text-xs font-medium text-red-700
-                                                 dark:bg-red-900/30
-                                                 dark:text-red-400">
+                                    <span class="rounded-full bg-amber-100
+                                                 px-3 py-1 text-xs font-medium
+                                                 text-amber-700
+                                                 dark:bg-amber-900/30
+                                                 dark:text-amber-400">
                                         Pending
                                     </span>
 
@@ -290,7 +280,7 @@
                                 <div class="flex items-center justify-end gap-3">
 
                                     {{-- View --}}
-                                    <a href="{{ route('fees.show', $fee) }}"
+                                   <a href="{{ route('security-deposits.show', $securityDeposit) }}"
                                     class="text-blue-600 hover:text-blue-800
                                             dark:text-blue-400">
                                         View
@@ -298,22 +288,22 @@
 
 
                                     {{-- Record Payment --}}
-                                    @if($fee->remaining_amount > 0)
+                                    @if($securityDeposit->remaining_amount > 0)
 
                                         <button
-                                            type="button"
-                                            onclick="openPaymentModal(
-                                                {{ $fee->id }},
-                                                '{{ addslashes($fee->student->full_name) }}',
-                                                {{ $fee->amount }},
-                                                {{ $fee->paid_amount }},
-                                                {{ $fee->remaining_amount }}
-                                            )"
-                                            class="rounded-lg bg-emerald-600 px-3 py-2
-                                                text-xs font-medium text-white
-                                                hover:bg-emerald-700">
-                                            Record Payment
-                                        </button>
+                                    type="button"
+                                    onclick="openSecurityPaymentModal(
+                                        {{ $securityDeposit->id }},
+                                        '{{ addslashes($securityDeposit->student->full_name) }}',
+                                        {{ $securityDeposit->required_amount }},
+                                        {{ $securityDeposit->paid_amount }},
+                                        {{ $securityDeposit->remaining_amount }}
+                                    )"
+                                    class="rounded-lg bg-emerald-600
+                                        px-3 py-2 text-xs font-medium
+                                        text-white hover:bg-emerald-700">
+                                    Record Payment
+                                </button>
 
                                     @endif
 
@@ -327,19 +317,20 @@
 
                         <tr>
 
-                            <td colspan="8" class="px-6 py-12 text-center">
+                            <td colspan="6" class="px-6 py-12 text-center">
 
                                 <div class="text-4xl">
-                                    💰
+                                    🔐
                                 </div>
 
                                 <p class="mt-3 text-lg font-semibold
                                           text-slate-600 dark:text-slate-300">
-                                    No fees found
+                                    No security deposits found
                                 </p>
 
                                 <p class="mt-1 text-sm text-slate-400">
-                                    Add a fee to get started.
+                                    Security deposits will appear here
+                                    after student admission.
                                 </p>
 
                             </td>
@@ -356,12 +347,12 @@
 
 
         {{-- Pagination --}}
-        @if($fees->hasPages())
+        @if($securityDeposits->hasPages())
 
             <div class="flex justify-center border-t border-slate-200
                         px-6 py-4 dark:border-slate-800">
 
-                {{ $fees->links('pagination::tailwind') }}
+                {{ $securityDeposits->links('pagination::tailwind') }}
 
             </div>
 
@@ -372,35 +363,36 @@
 </div>
 
 
-   {{-- ===================================================== --}}
-{{-- RECORD PAYMENT MODAL --}}
+
+{{-- ===================================================== --}}
+{{-- SECURITY PAYMENT MODAL --}}
 {{-- ===================================================== --}}
 
-<div id="paymentModal"
+<div id="securityPaymentModal"
      class="fixed inset-0 z-50 hidden items-center justify-center
             bg-slate-900/60 px-4 backdrop-blur-sm">
 
     <div class="w-full max-w-lg rounded-xl bg-white shadow-2xl
                 dark:bg-slate-800">
 
-        {{-- Modal Header --}}
+        {{-- Header --}}
         <div class="flex items-start justify-between border-b
                     border-slate-200 px-6 py-5
                     dark:border-slate-700">
 
             <div>
                 <h2 class="text-lg font-bold text-slate-800 dark:text-white">
-                    Record Payment
+                    Record Security Payment
                 </h2>
 
                 <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                    Add a payment for this fee
+                    Add a security deposit payment
                 </p>
             </div>
 
             <button
                 type="button"
-                onclick="closePaymentModal()"
+                onclick="closeSecurityPaymentModal()"
                 class="text-2xl leading-none text-slate-400
                        hover:text-slate-600 dark:hover:text-slate-200">
                 &times;
@@ -409,18 +401,18 @@
         </div>
 
 
-        {{-- Fee Summary --}}
+        {{-- Summary --}}
         <div class="grid grid-cols-3 gap-3 px-6 py-5">
 
-            {{-- Total --}}
+            {{-- Required --}}
             <div class="rounded-lg bg-slate-50 p-3
                         dark:bg-slate-700/50">
 
                 <p class="text-xs text-slate-500 dark:text-slate-400">
-                    Total Fee
+                    Required
                 </p>
 
-                <p id="paymentTotal"
+                <p id="securityPaymentRequired"
                    class="mt-1 text-sm font-bold text-slate-800 dark:text-white">
                     ₹0.00
                 </p>
@@ -436,8 +428,9 @@
                     Already Paid
                 </p>
 
-                <p id="paymentPaid"
-                   class="mt-1 text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                <p id="securityPaymentPaid"
+                   class="mt-1 text-sm font-bold text-emerald-600
+                          dark:text-emerald-400">
                     ₹0.00
                 </p>
 
@@ -452,8 +445,9 @@
                     Remaining
                 </p>
 
-                <p id="paymentRemaining"
-                   class="mt-1 text-sm font-bold text-red-600 dark:text-red-400">
+                <p id="securityPaymentRemaining"
+                   class="mt-1 text-sm font-bold text-red-600
+                          dark:text-red-400">
                     ₹0.00
                 </p>
 
@@ -463,7 +457,7 @@
 
 
         {{-- Form --}}
-        <form id="paymentForm" method="POST">
+        <form id="securityPaymentForm" method="POST">
 
             @csrf
 
@@ -477,7 +471,7 @@
                         Student
                     </label>
 
-                    <div id="paymentStudent"
+                    <div id="securityPaymentStudent"
                          class="rounded-lg border border-slate-200
                                 bg-slate-50 px-4 py-3 text-sm font-medium
                                 text-slate-700
@@ -492,7 +486,7 @@
                 {{-- Payment Amount --}}
                 <div>
 
-                    <label for="payment_amount"
+                    <label for="security_payment_amount"
                            class="mb-2 block text-sm font-medium
                                   text-slate-700 dark:text-slate-300">
                         Payment Amount <span class="text-red-500">*</span>
@@ -508,7 +502,7 @@
 
                         <input
                             type="number"
-                            id="payment_amount"
+                            id="security_payment_amount"
                             name="amount"
                             min="0.01"
                             step="0.01"
@@ -524,7 +518,7 @@
 
                     </div>
 
-                    <p id="paymentAmountError"
+                    <p id="securityPaymentAmountError"
                        class="mt-1 hidden text-xs text-red-500">
                     </p>
 
@@ -534,7 +528,7 @@
                 {{-- Payment Date --}}
                 <div>
 
-                    <label for="payment_date"
+                    <label for="security_payment_date"
                            class="mb-2 block text-sm font-medium
                                   text-slate-700 dark:text-slate-300">
                         Payment Date <span class="text-red-500">*</span>
@@ -542,7 +536,7 @@
 
                     <input
                         type="date"
-                        id="payment_date"
+                        id="security_payment_date"
                         name="payment_date"
                         value="{{ now()->format('Y-m-d') }}"
                         required
@@ -561,14 +555,14 @@
                 {{-- Payment Method --}}
                 <div>
 
-                    <label for="payment_method"
+                    <label for="security_payment_method"
                            class="mb-2 block text-sm font-medium
                                   text-slate-700 dark:text-slate-300">
                         Payment Method <span class="text-red-500">*</span>
                     </label>
 
                     <select
-                        id="payment_method"
+                        id="security_payment_method"
                         name="payment_method"
                         required
                         class="w-full rounded-lg border border-slate-300
@@ -580,35 +574,21 @@
                                dark:bg-slate-900 dark:text-white"
                     >
 
-                        <option value="cash">
-                            Cash
-                        </option>
-
-                        <option value="upi">
-                            UPI
-                        </option>
-
-                        <option value="bank_transfer">
-                            Bank Transfer
-                        </option>
-
-                        <option value="card">
-                            Card
-                        </option>
-
-                        <option value="other">
-                            Other
-                        </option>
+                        <option value="cash">Cash</option>
+                        <option value="upi">UPI</option>
+                        <option value="bank_transfer">Bank Transfer</option>
+                        <option value="card">Card</option>
+                        <option value="other">Other</option>
 
                     </select>
 
                 </div>
 
 
-                {{-- Reference Number --}}
+                {{-- Reference --}}
                 <div>
 
-                    <label for="reference_no"
+                    <label for="security_reference_no"
                            class="mb-2 block text-sm font-medium
                                   text-slate-700 dark:text-slate-300">
                         Reference No.
@@ -619,7 +599,7 @@
 
                     <input
                         type="text"
-                        id="reference_no"
+                        id="security_reference_no"
                         name="reference_no"
                         placeholder="UPI / transaction reference"
                         class="w-full rounded-lg border border-slate-300
@@ -637,7 +617,7 @@
                 {{-- Notes --}}
                 <div>
 
-                    <label for="payment_notes"
+                    <label for="security_payment_notes"
                            class="mb-2 block text-sm font-medium
                                   text-slate-700 dark:text-slate-300">
                         Notes
@@ -647,10 +627,10 @@
                     </label>
 
                     <textarea
-                        id="payment_notes"
+                        id="security_payment_notes"
                         name="notes"
                         rows="3"
-                        placeholder="Any additional payment details..."
+                        placeholder="Any additional details..."
                         class="w-full rounded-lg border border-slate-300
                                bg-white px-4 py-3 text-sm
                                text-slate-800 outline-none
@@ -668,7 +648,7 @@
 
                     <button
                         type="button"
-                        onclick="closePaymentModal()"
+                        onclick="closeSecurityPaymentModal()"
                         class="rounded-lg border border-slate-300
                                px-5 py-2.5 text-sm font-medium
                                text-slate-700 hover:bg-slate-50
@@ -680,7 +660,7 @@
 
                     <button
                         type="submit"
-                        id="recordPaymentButton"
+                        id="recordSecurityPaymentButton"
                         class="rounded-lg bg-emerald-600 px-5 py-2.5
                                text-sm font-medium text-white
                                hover:bg-emerald-700">
@@ -698,80 +678,113 @@
 </div>
 
 
-{{-- ===================================================== --}}
-{{-- RECORD PAYMENT JAVASCRIPT --}}
-{{-- ===================================================== --}}
-
 <script>
 
-let currentRemainingAmount = 0;
+let currentSecurityRemainingAmount = 0;
 
 
-function openPaymentModal(
-    feeId,
+/*
+|--------------------------------------------------------------------------
+| Open Modal
+|--------------------------------------------------------------------------
+*/
+
+function openSecurityPaymentModal(
+    securityDepositId,
     studentName,
-    totalAmount,
+    requiredAmount,
     paidAmount,
     remainingAmount
 ) {
 
-    const modal = document.getElementById('paymentModal');
-    const form = document.getElementById('paymentForm');
+    const modal =
+        document.getElementById('securityPaymentModal');
 
-    currentRemainingAmount = parseFloat(remainingAmount);
+    const form =
+        document.getElementById('securityPaymentForm');
+
+
+    currentSecurityRemainingAmount =
+        parseFloat(remainingAmount);
 
 
     // Student
-    document.getElementById('paymentStudent').textContent =
-        studentName;
+    document.getElementById('securityPaymentStudent')
+        .textContent = studentName;
 
 
-    // Amounts
-    document.getElementById('paymentTotal').textContent =
-        '₹' + Number(totalAmount).toLocaleString('en-IN', {
+    // Required
+    document.getElementById('securityPaymentRequired')
+        .textContent =
+        '₹' + Number(requiredAmount).toLocaleString('en-IN', {
             minimumFractionDigits: 2
         });
 
-    document.getElementById('paymentPaid').textContent =
+
+    // Paid
+    document.getElementById('securityPaymentPaid')
+        .textContent =
         '₹' + Number(paidAmount).toLocaleString('en-IN', {
             minimumFractionDigits: 2
         });
 
-    document.getElementById('paymentRemaining').textContent =
+
+    // Remaining
+    document.getElementById('securityPaymentRemaining')
+        .textContent =
         '₹' + Number(remainingAmount).toLocaleString('en-IN', {
             minimumFractionDigits: 2
         });
 
 
     // Form action
-    form.action = '/fees/' + feeId + '/payment';
+    form.action =
+        '/security-deposits/' + securityDepositId + '/payment';
 
 
-    // Payment amount
+    // Reset amount
     const amountInput =
-        document.getElementById('payment_amount');
+        document.getElementById('security_payment_amount');
 
     amountInput.value = '';
     amountInput.max = remainingAmount;
 
 
     // Reset error
-    document.getElementById('paymentAmountError')
-        .classList.add('hidden');
+    const error =
+        document.getElementById('securityPaymentAmountError');
 
-    document.getElementById('paymentAmountError')
-        .textContent = '';
+    error.textContent = '';
+    error.classList.add('hidden');
 
 
-    // Open modal
+    // Reset button
+    const button =
+        document.getElementById('recordSecurityPaymentButton');
+
+    button.disabled = false;
+    button.classList.remove(
+        'opacity-50',
+        'cursor-not-allowed'
+    );
+
+
+    // Open
     modal.classList.remove('hidden');
     modal.classList.add('flex');
 }
 
 
-function closePaymentModal()
+/*
+|--------------------------------------------------------------------------
+| Close Modal
+|--------------------------------------------------------------------------
+*/
+
+function closeSecurityPaymentModal()
 {
-    const modal = document.getElementById('paymentModal');
+    const modal =
+        document.getElementById('securityPaymentModal');
 
     modal.classList.add('hidden');
     modal.classList.remove('flex');
@@ -780,55 +793,75 @@ function closePaymentModal()
 
 /*
 |--------------------------------------------------------------------------
-| Prevent Frontend Overpayment
+| Prevent Overpayment
 |--------------------------------------------------------------------------
 */
 
-document.getElementById('payment_amount')
+document.getElementById('security_payment_amount')
     .addEventListener('input', function () {
 
-        const amount = parseFloat(this.value);
-        const error = document.getElementById('paymentAmountError');
-        const button = document.getElementById('recordPaymentButton');
+        const amount =
+            parseFloat(this.value);
 
-        if (amount > currentRemainingAmount) {
+        const error =
+            document.getElementById(
+                'securityPaymentAmountError'
+            );
+
+        const button =
+            document.getElementById(
+                'recordSecurityPaymentButton'
+            );
+
+
+        if (amount > currentSecurityRemainingAmount) {
 
             error.textContent =
                 'Payment cannot be greater than ₹' +
-                Number(currentRemainingAmount).toLocaleString('en-IN');
+                Number(currentSecurityRemainingAmount)
+                    .toLocaleString('en-IN');
 
             error.classList.remove('hidden');
 
             button.disabled = true;
-            button.classList.add('opacity-50', 'cursor-not-allowed');
+
+            button.classList.add(
+                'opacity-50',
+                'cursor-not-allowed'
+            );
 
         } else {
+
+            error.textContent = '';
 
             error.classList.add('hidden');
 
             button.disabled = false;
-            button.classList.remove('opacity-50', 'cursor-not-allowed');
+
+            button.classList.remove(
+                'opacity-50',
+                'cursor-not-allowed'
+            );
         }
     });
 
 
 /*
 |--------------------------------------------------------------------------
-| Close Modal By Clicking Outside
+| Close When Clicking Outside
 |--------------------------------------------------------------------------
 */
 
-document.getElementById('paymentModal')
+document.getElementById('securityPaymentModal')
     .addEventListener('click', function (event) {
 
         if (event.target === this) {
-            closePaymentModal();
+            closeSecurityPaymentModal();
         }
 
     });
 
 </script>
-
 
 
 @endsection
