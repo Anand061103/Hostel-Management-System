@@ -1,6 +1,6 @@
 <aside class="fixed left-0 top-0 flex h-screen w-64 shrink-0
-              flex-col bg-slate-900 text-white">   
-               {{-- Logo --}}
+              flex-col bg-slate-900 text-white">
+    {{-- Logo --}}
     <div class="flex h-20 items-center border-b border-slate-800 px-6">
         <div>
             <h1 class="text-xl font-bold">Hostel<span class="text-blue-400">MS</span></h1>
@@ -15,58 +15,58 @@
             Main Menu
         </p>
 
-                <a href="{{ route('dashboard') }}"
-        class="mb-2 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium
+        <a href="{{ route('dashboard') }}"
+            class="mb-2 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium
         {{ request()->routeIs('dashboard') ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
             <span>📊</span>
             <span>Dashboard</span>
         </a>
 
-            <a href="{{ route('students.index') }}"
-        class="mb-2 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium
+        <a href="{{ route('students.index') }}"
+            class="mb-2 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium
         {{ request()->routeIs('students.*') ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
             <span>👨‍🎓</span>
             <span>Students</span>
         </a>
-        
 
-            <a href="{{ route('rooms.index') }}"
-        class="mb-2 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium
+
+        <a href="{{ route('rooms.index') }}"
+            class="mb-2 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium
         {{ request()->routeIs('rooms.*') ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
             <span>🚪</span>
             <span>Rooms</span>
         </a>
 
-        <a href="#"
-           class="mb-2 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white">
+        <a href="{{ route('beds.index') }}"
+            class="mb-2 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white">
             <span>🛏️</span>
             <span>Beds</span>
         </a>
 
-            <a href="{{ route('fees.index') }}"
+        <a href="{{ route('fees.index') }}"
             class="mb-2 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium
                 text-slate-300 transition hover:bg-slate-800 hover:text-white">
             <span>💰</span>
             <span>Fees</span>
         </a>
 
-            <a href="{{ route('security-deposits.index') }}"
+        <a href="{{ route('security-deposits.index') }}"
             class="mb-2 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium
                     text-slate-300 transition hover:bg-slate-800 hover:text-white">
 
-                <span>🔐</span>
-                <span>Security Deposit</span>
+            <span>🔐</span>
+            <span>Security Deposit</span>
 
-            </a>
-            
+        </a>
+
         <a href="#"
-           class="mb-2 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white">
+            class="mb-2 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white">
             <span>⚠️</span>
             <span>Complaints</span>
         </a>
 
         <a href="#"
-           class="mb-2 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white">
+            class="mb-2 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white">
             <span>📢</span>
             <span>Notices</span>
         </a>
@@ -76,7 +76,7 @@
         </p>
 
         <a href="#"
-           class="mb-2 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white">
+            class="mb-2 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white">
             <span>⚙️</span>
             <span>Settings</span>
         </a>
@@ -84,12 +84,12 @@
     </nav>
 
     {{-- Logout --}}
-<div class="mt-auto border-t border-slate-800 p-4">
+    <div class="mt-auto border-t border-slate-800 p-4">
         <form action="{{ route('logout') }}" method="POST">
             @csrf
 
             <button type="submit"
-                    class="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-slate-300 hover:bg-red-500/10 hover:text-red-400">
+                class="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-slate-300 hover:bg-red-500/10 hover:text-red-400">
                 <span>🚪</span>
                 <span>Logout</span>
             </button>

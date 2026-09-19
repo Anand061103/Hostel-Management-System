@@ -4,150 +4,142 @@ namespace App\Http\Controllers;
 
 use App\Models\Fee;
 use App\Models\FeePayment;
+use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class FeeController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-  public function index()
-{
-    $fees = Fee::with([
-        'student',
-        'payments',
-    ])
-    ->latest()
-    ->paginate(10);
+    public function index()
+    {
+        $fees = Fee::with([
+            'student',
+            'payments',
+        ])
+            ->latest()
+            ->paginate(10);
 
-    $totalFeeAmount = Fee::sum('amount');
+        $totalFeeAmount = Fee::sum('amount');
 
-    $totalPaid = \App\Models\FeePayment::sum('amount');
+        $totalPaid = FeePayment::sum('amount');
 
-    $totalOutstanding = max(0, $totalFeeAmount - $totalPaid);
+        $totalOutstanding = max(0, $totalFeeAmount - $totalPaid);
 
-    $pendingFees = Fee::whereIn('status', [
-        'pending',
-        'partial',
-    ])->count();
+        $pendingFees = Fee::whereIn('status', [
+            'pending',
+            'partial',
+        ])->count();
 
-    return view('fees.index', compact(
-        'fees',
-        'totalFeeAmount',
-        'totalPaid',
-        'totalOutstanding',
-        'pendingFees'
-    ));
-}
+        return view('fees.index', compact(
+            'fees',
+            'totalFeeAmount',
+            'totalPaid',
+            'totalOutstanding',
+            'pendingFees'
+        ));
+    }
 
     /**
      * Show the form for creating a new resource.
      */
     public function create()
-{
-    $students = \App\Models\Student::orderBy('full_name')->get();
+    {
+        $students = Student::orderBy('full_name')->get();
 
-    return view('fees.create', compact('students'));
-}
+        return view('fees.create', compact('students'));
+    }
 
+    public function recordPayment(Request $request, Fee $fee)
+    {
+        $validated = $request->validate([
+            'amount' => [
+                'required',
+                'numeric',
+                'gt:0',
+            ],
 
+            'payment_date' => [
+                'required',
+                'date',
+            ],
 
-public function recordPayment(Request $request, Fee $fee)
-{
-    $validated = $request->validate([
-        'amount' => [
-            'required',
-            'numeric',
-            'gt:0',
-        ],
+            'payment_method' => [
+                'required',
+                'in:cash,upi,bank_transfer,card,other',
+            ],
 
-        'payment_date' => [
-            'required',
-            'date',
-        ],
+            'reference_no' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
 
-        'payment_method' => [
-            'required',
-            'in:cash,upi,bank_transfer,card,other',
-        ],
-
-        'reference_no' => [
-            'nullable',
-            'string',
-            'max:100',
-        ],
-
-        'notes' => [
-            'nullable',
-            'string',
-            'max:1000',
-        ],
-    ]);
-
-
-    DB::transaction(function () use ($fee, $validated) {
-
-        // Lock this fee while processing the payment
-        $fee = Fee::where('id', $fee->id)
-            ->lockForUpdate()
-            ->firstOrFail();
-
-
-        // Calculate already paid amount
-        $paidAmount = $fee->payments()->sum('amount');
-
-        // Calculate remaining amount
-        $remainingAmount = (float) $fee->amount - (float) $paidAmount;
-
-
-        // Prevent overpayment
-        if ((float) $validated['amount'] > $remainingAmount) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
-                'amount' => [
-                    'Payment amount cannot be greater than the remaining amount of ₹'
-                    . number_format($remainingAmount, 2),
-                ],
-            ]);
-        }
-
-
-        // Create payment record
-        FeePayment::create([
-            'fee_id' => $fee->id,
-            'amount' => $validated['amount'],
-            'payment_date' => $validated['payment_date'],
-            'payment_method' => $validated['payment_method'],
-            'reference_no' => $validated['reference_no'] ?? null,
-            'notes' => $validated['notes'] ?? null,
+            'notes' => [
+                'nullable',
+                'string',
+                'max:1000',
+            ],
         ]);
 
+        DB::transaction(function () use ($fee, $validated) {
 
-        // Calculate new paid amount
-        $newPaidAmount = (float) $paidAmount + (float) $validated['amount'];
+            // Lock this fee while processing the payment
+            $fee = Fee::where('id', $fee->id)
+                ->lockForUpdate()
+                ->firstOrFail();
 
+            // Calculate already paid amount
+            $paidAmount = $fee->payments()->sum('amount');
 
-        // Update fee status
-        if ($newPaidAmount >= (float) $fee->amount) {
+            // Calculate remaining amount
+            $remainingAmount = (float) $fee->amount - (float) $paidAmount;
 
-            $fee->update([
-                'status' => 'paid',
+            // Prevent overpayment
+            if ((float) $validated['amount'] > $remainingAmount) {
+                throw ValidationException::withMessages([
+                    'amount' => [
+                        'Payment amount cannot be greater than the remaining amount of ₹'
+                        .number_format($remainingAmount, 2),
+                    ],
+                ]);
+            }
+
+            // Create payment record
+            FeePayment::create([
+                'fee_id' => $fee->id,
+                'amount' => $validated['amount'],
+                'payment_date' => $validated['payment_date'],
+                'payment_method' => $validated['payment_method'],
+                'reference_no' => $validated['reference_no'] ?? null,
+                'notes' => $validated['notes'] ?? null,
             ]);
 
-        } else {
+            // Calculate new paid amount
+            $newPaidAmount = (float) $paidAmount + (float) $validated['amount'];
 
-            $fee->update([
-                'status' => 'partial',
-            ]);
-        }
-    });
+            // Update fee status
+            if ($newPaidAmount >= (float) $fee->amount) {
 
+                $fee->update([
+                    'status' => 'paid',
+                ]);
 
-    return redirect()
-        ->route('fees.index')
-        ->with('success', 'Payment recorded successfully.');
-}
+            } else {
 
+                $fee->update([
+                    'status' => 'partial',
+                ]);
+            }
+        });
+
+        return redirect()
+            ->route('fees.index')
+            ->with('success', 'Payment recorded successfully.');
+    }
 
     /**
      * Store a newly created resource in storage.
@@ -162,7 +154,12 @@ public function recordPayment(Request $request, Fee $fee)
      */
     public function show(string $id)
     {
-        //
+        $fee = Fee::with([
+            'student',
+            'payments',
+        ])->findOrFail($id);
+
+        return view('fees.show', compact('fee'));
     }
 
     /**
