@@ -15,7 +15,16 @@
     <div class="flex min-h-screen">
 
         {{-- Sidebar --}}
-        @include('components.sidebar')
+        @if (auth()->user()->role === 'superadmin' && session('current_hostel_id'))
+            {{-- Admin inside selected hostel --}}
+            @include('components.sidebar')
+        @elseif(auth()->user()->role === 'superadmin')
+            {{-- Admin Global Panel --}}
+            @include('components.owner-sidebar')
+        @else
+            {{-- Warden --}}
+            @include('components.sidebar')
+        @endif
 
         {{-- Main Area --}}
         <div class="flex min-w-0 flex-1 flex-col">

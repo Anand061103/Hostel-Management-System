@@ -1,11 +1,11 @@
 <?php
 
 namespace App\Models;
-use App\Models\BedAssignment;
+
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Fee;
-use App\Models\SecurityDeposit;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+
 class Student extends Model
 {
     protected $fillable = [
@@ -18,6 +18,7 @@ class Student extends Model
         'image',
         'joining_date',
         'status',
+        'hostel_id',
     ];
 
     protected function casts(): array
@@ -28,29 +29,31 @@ class Student extends Model
     }
 
     public function bedAssignments(): HasMany
-{
-    return $this->hasMany(BedAssignment::class);
-}
-
+    {
+        return $this->hasMany(BedAssignment::class);
+    }
 
     public function currentAssignment()
-{
-    return $this->hasOne(BedAssignment::class)
-        ->where(function ($query) {
-            $query->whereNull('end_date')
-                  ->orWhereDate('end_date', '>=', now()->toDateString());
-        });
-}
+    {
+        return $this->hasOne(BedAssignment::class)
+            ->where(function ($query) {
+                $query->whereNull('end_date')
+                    ->orWhereDate('end_date', '>=', now()->toDateString());
+            });
+    }
 
+    public function fees(): HasMany
+    {
+        return $this->hasMany(Fee::class);
+    }
 
-public function fees(): HasMany
-{
-    return $this->hasMany(Fee::class);
-}
+    public function securityDeposits(): HasMany
+    {
+        return $this->hasMany(SecurityDeposit::class);
+    }
 
-public function securityDeposits(): HasMany
-{
-    return $this->hasMany(SecurityDeposit::class);
-}
-
+    public function hostel(): BelongsTo
+    {
+        return $this->belongsTo(Hostel::class);
+    }
 }

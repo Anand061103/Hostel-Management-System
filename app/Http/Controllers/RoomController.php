@@ -8,7 +8,7 @@ use App\Models\BedAssignment;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Facades\Auth;
 class RoomController extends Controller
 {
     public function index(Request $request)
@@ -60,82 +60,125 @@ class RoomController extends Controller
 
 
     public function store(Request $request)
-    {
-        $request->validate([
-            'floor' => 'required|integer|min:0|max:5',
-            'bed_count' => 'required|integer|min:1|max:5',
-            'room_type' => 'required|string|max:50',
-        ]);
+{
+    $request->validate([
+        'floor' => 'required|integer|min:0|max:5',
+        'bed_count' => 'required|integer|min:1|max:5',
+        'room_type' => 'required|string|max:50',
+    ]);
 
-        $floor = (int) $request->floor;
+    /*
+    |--------------------------------------------------------------------------
+    | Get Current Hostel
+    |--------------------------------------------------------------------------
+    */
 
-        /*
-        |--------------------------------------------------------------------------
-        | Generate Room Number
-        |--------------------------------------------------------------------------
-        */
+    $user = Auth::user();
 
-        $lastRoom = Room::where('floor', $floor)
-            ->orderByDesc('id')
-            ->first();
+    if ($user->role === 'superadmin') {
 
-        $nextNumber = $lastRoom
-            ? ((int) substr($lastRoom->room_number, $floor === 0 ? 1 : 0)) + 1
-            : 1;
+        $hostelId = session('current_hostel_id');
 
-        if ($floor === 0) {
-            $roomNumber = 'G' . str_pad(
-                $nextNumber,
-                2,
-                '0',
-                STR_PAD_LEFT
-            );
-        } else {
-            $roomNumber = ($floor * 100) + $nextNumber;
+        if (!$hostelId) {
+            return back()
+                ->withInput()
+                ->with('error', 'Please select a hostel first.');
         }
 
+    } elseif ($user->role === 'warden') {
 
-        /*
-        |--------------------------------------------------------------------------
-        | Create Room
-        |--------------------------------------------------------------------------
-        */
+        $hostelId = $user->hostel_id;
 
-        $room = Room::create([
-            'room_number' => $roomNumber,
-            'floor' => $floor,
-            'room_type' => $request->room_type,
-            'status' => 'active',
-        ]);
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Create Beds Automatically
-        |--------------------------------------------------------------------------
-        */
-
-        $bedLetters = ['A', 'B', 'C', 'D', 'E'];
-
-        $beds = [];
-
-        for ($i = 0; $i < $request->bed_count; $i++) {
-            $beds[] = [
-                'bed_number' => $bedLetters[$i],
-                'status' => 'available',
-            ];
+        if (!$hostelId) {
+            abort(403, 'No hostel is assigned to this account.');
         }
 
-        $room->beds()->createMany($beds);
+    } else {
 
-
-        return redirect()
-            ->route('rooms.index', ['floor' => $floor])
-            ->with(
-                'success',
-                "Room {$roomNumber} created successfully."
-            );
+        abort(403, 'Invalid user role.');
     }
+
+
+    $floor = (int) $request->floor;
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Generate Room Number
+    |--------------------------------------------------------------------------
+    */
+
+    $lastRoom = Room::where('hostel_id', $hostelId)
+        ->where('floor', $floor)
+        ->orderByDesc('id')
+        ->first();
+
+    $nextNumber = $lastRoom
+        ? ((int) substr(
+            $lastRoom->room_number,
+            $floor === 0 ? 1 : 0
+        )) + 1
+        : 1;
+
+
+    if ($floor === 0) {
+
+        $roomNumber = 'G' . str_pad(
+            $nextNumber,
+            2,
+            '0',
+            STR_PAD_LEFT
+        );
+
+    } else {
+
+        $roomNumber = ($floor * 100) + $nextNumber;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Create Room
+    |--------------------------------------------------------------------------
+    */
+
+    $room = Room::create([
+        'hostel_id' => $hostelId,
+        'room_number' => $roomNumber,
+        'floor' => $floor,
+        'room_type' => $request->room_type,
+        'status' => 'active',
+    ]);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Create Beds Automatically
+    |--------------------------------------------------------------------------
+    */
+
+    $bedLetters = ['A', 'B', 'C', 'D', 'E'];
+
+    $beds = [];
+
+    for ($i = 0; $i < $request->bed_count; $i++) {
+
+        $beds[] = [
+            'bed_number' => $bedLetters[$i],
+            'status' => 'available',
+        ];
+    }
+
+    $room->beds()->createMany($beds);
+
+
+    return redirect()
+        ->route('rooms.index', ['floor' => $floor])
+        ->with(
+            'success',
+            "Room {$roomNumber} created successfully."
+        );
+}
 
 
        public function show(Room $room)

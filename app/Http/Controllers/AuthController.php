@@ -8,44 +8,72 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
+    public function signup(Request $request)
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'unique:users,email'],
+            'password' => ['required', 'confirmed', 'min:8'],
+        ]);
 
-public function signup(Request $request)
-{
-    $data = $request->validate([
-        'name' => ['required', 'string', 'max:255'],
-        'email' => ['required', 'email', 'unique:users,email'],
-        'password' => ['required', 'confirmed', 'min:8'],
-    ]);
+        $user = User::create($data);
 
-    $user = User::create($data);
+        Auth::login($user);
 
-    Auth::login($user);
+        $request->session()->regenerate();
 
-    $request->session()->regenerate();
+        return redirect('/login');
+    }
 
-    return redirect('/login');
-}
     public function login(Request $request)
     {
-        // Validation
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
 
-        // Check credentials
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
 
-            // Regenerate session after successful login
             $request->session()->regenerate();
 
-            return redirect()->intended('/dashboard');
+            $user = Auth::user();
+
+            // Super Admin
+            if ($user->role === 'superadmin') {
+                return redirect()->route('dashboard');
+            }
+
+            // Warden
+            if ($user->role === 'warden') {
+
+                if (! $user->hostel_id) {
+                    Auth::logout();
+
+                    return redirect()
+                        ->route('login')
+                        ->withErrors([
+                            'email' => 'No hostel is assigned to this warden account.',
+                        ]);
+                }
+
+                return redirect()->route('dashboard');
+            }
+
+            // Unknown / incomplete role
+            Auth::logout();
+
+            return redirect()
+                ->route('login')
+                ->withErrors([
+                    'email' => 'This account does not have a valid role.',
+                ]);
         }
 
-        // Wrong credentials
-        return back()->withErrors([
-            'email' => 'The provided credentials do not match our records.',
-        ])->onlyInput('email');
+        return back()
+            ->withErrors([
+                'email' => 'The provided credentials do not match our records.',
+            ])
+            ->onlyInput('email');
     }
 
     public function logout(Request $request)
