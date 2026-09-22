@@ -6,13 +6,35 @@
         {{-- Left --}}
         <div>
 
-            <h2 class="text-xl font-semibold text-slate-800 dark:text-white">
-                Dashboard
-            </h2>
+            @if (auth()->user()->role === 'superadmin' && session('current_hostel_id'))
+                @php
+                    $currentHostel = \App\Models\Hostel::find(session('current_hostel_id'));
+                @endphp
 
-            <p class="text-sm text-slate-500 dark:text-slate-400">
-                Welcome back, {{ auth()->user()->name ?? 'Admin' }}
-            </p>
+                <h2 class="text-xl font-semibold text-slate-800 dark:text-white">
+                    {{ $currentHostel?->name ?? 'Hostel' }}
+                </h2>
+
+                <p class="text-sm text-slate-500 dark:text-slate-400">
+                    Hostel Management
+                </p>
+            @elseif(auth()->user()->role === 'warden')
+                <h2 class="text-xl font-semibold text-slate-800 dark:text-white">
+                    {{ auth()->user()->hostel?->name ?? 'Hostel' }}
+                </h2>
+
+                <p class="text-sm text-slate-500 dark:text-slate-400">
+                    Hostel Management
+                </p>
+            @else
+                <h2 class="text-xl font-semibold text-slate-800 dark:text-white">
+                    Dashboard
+                </h2>
+
+                <p class="text-sm text-slate-500 dark:text-slate-400">
+                    Welcome back, {{ auth()->user()->name ?? 'Admin' }}
+                </p>
+            @endif
 
         </div>
 
@@ -38,7 +60,22 @@
                 </a>
             @endif
 
+            {{-- switch hostel  --}}
+            @if (auth()->user()->role === 'superadmin' && session('current_hostel_id'))
+                <a href="{{ route('owner.switchHostel') }}"
+                    class="rounded-lg border border-slate-200
+               bg-white px-3 py-2 text-sm font-medium
+               text-slate-700 transition
+               hover:bg-slate-100
+               dark:border-slate-700
+               dark:bg-slate-800
+               dark:text-slate-200
+               dark:hover:bg-slate-700">
 
+                    🔄 Switch Hostel
+
+                </a>
+            @endif
             {{-- Theme Toggle --}}
             <button id="theme-toggle" type="button">
 
@@ -67,27 +104,43 @@
             {{-- Profile --}}
             <a href="{{ route('profile') }}"
                 class="flex items-center gap-3 rounded-lg px-2 py-1
-                       transition hover:bg-slate-100
-                       dark:hover:bg-slate-800">
+           transition hover:bg-slate-100
+           dark:hover:bg-slate-800">
+
+                @php
+                    $profileUser = auth()->user();
+
+                    if ($profileUser->role === 'superadmin' && session('current_hostel_id')) {
+                        $profileHostel = \App\Models\Hostel::find(session('current_hostel_id'));
+
+                        $profileUser = $profileHostel
+                            ? $profileHostel->users()->where('role', 'warden')->first()
+                            : null;
+                    }
+                @endphp
 
                 <div
                     class="flex h-10 w-10 items-center justify-center
-                           rounded-full bg-blue-600
-                           font-semibold text-white">
+               rounded-full bg-blue-600
+               font-semibold text-white">
 
-                    {{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 1)) }}
+                    {{ strtoupper(substr($profileUser?->name ?? 'A', 0, 1)) }}
 
                 </div>
 
                 <div class="hidden sm:block">
 
                     <p class="text-sm font-semibold text-slate-800 dark:text-white">
-                        {{ auth()->user()->name ?? 'Admin' }}
+                        {{ $profileUser?->name ?? 'Admin' }}
                     </p>
 
                     <p class="text-xs text-slate-500 dark:text-slate-400">
 
-                        {{ auth()->user()->role === 'superadmin' ? 'Super Admin' : 'Warden' }}
+                        @if (auth()->user()->role === 'superadmin' && session('current_hostel_id'))
+                            Warden
+                        @else
+                            {{ auth()->user()->role === 'superadmin' ? 'Super Admin' : 'Warden' }}
+                        @endif
 
                     </p>
 

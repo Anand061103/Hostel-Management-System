@@ -12,50 +12,24 @@ use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
-    public function index()
-    {
-        $user = Auth::user();
+   public function index()
+{
+    $user = Auth::user();
 
-        // Super Admin / Owner
-        if ($user->role === 'superadmin') {
+    /*
+    |--------------------------------------------------------------------------
+    | Super Admin
+    |--------------------------------------------------------------------------
+    */
 
-            $totalHostels = Hostel::where('status', 'active')->count();
+    if ($user->role === 'superadmin') {
 
-            $totalStudents = Student::count();
+        // Admin is inside a selected hostel
+        if (session('current_hostel_id')) {
 
-            $totalRooms = Room::count();
-
-            $totalBeds = Bed::count();
-
-            $totalFeeAmount = Fee::sum('amount');
-
-            $totalPaid = FeePayment::sum('amount');
-
-            $totalOutstanding = max(
-                0,
-                $totalFeeAmount - $totalPaid
+            $hostel = Hostel::findOrFail(
+                session('current_hostel_id')
             );
-
-            return view('dashboard.index', compact(
-                'user',
-                'totalHostels',
-                'totalStudents',
-                'totalRooms',
-                'totalBeds',
-                'totalFeeAmount',
-                'totalPaid',
-                'totalOutstanding'
-            ));
-        }
-
-        // Warden
-        if ($user->role === 'warden') {
-
-            $hostel = $user->hostel;
-
-            if (! $hostel) {
-                abort(403, 'No hostel is assigned to this account.');
-            }
 
             return view('dashboard.hostel', compact(
                 'user',
@@ -63,6 +37,60 @@ class DashboardController extends Controller
             ));
         }
 
-        abort(403, 'Invalid user role.');
+
+        // Admin Global Dashboard
+
+        $totalHostels = Hostel::where('status', 'active')->count();
+
+        $totalStudents = Student::count();
+
+        $totalRooms = Room::count();
+
+        $totalBeds = Bed::count();
+
+        $totalFeeAmount = Fee::sum('amount');
+
+        $totalPaid = FeePayment::sum('amount');
+
+        $totalOutstanding = max(
+            0,
+            $totalFeeAmount - $totalPaid
+        );
+
+        return view('dashboard.index', compact(
+            'user',
+            'totalHostels',
+            'totalStudents',
+            'totalRooms',
+            'totalBeds',
+            'totalFeeAmount',
+            'totalPaid',
+            'totalOutstanding'
+        ));
     }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Warden
+    |--------------------------------------------------------------------------
+    */
+
+    if ($user->role === 'warden') {
+
+        $hostel = $user->hostel;
+
+        if (!$hostel) {
+            abort(403, 'No hostel is assigned to this account.');
+        }
+
+        return view('dashboard.hostel', compact(
+            'user',
+            'hostel'
+        ));
+    }
+
+
+    abort(403, 'Invalid user role.');
+}
 }

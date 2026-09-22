@@ -3,64 +3,78 @@
 namespace App\Http\Controllers;
 
 use App\Models\Hostel;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 class OwnerController extends Controller
 {
     public function profile()
-    {
-        $user = Auth::user();
+{
+    $user = Auth::user();
 
-        /*
-        |--------------------------------------------------------------------------
-        | Super Admin
-        |--------------------------------------------------------------------------
-        */
+    /*
+    |--------------------------------------------------------------------------
+    | SUPER ADMIN
+    |--------------------------------------------------------------------------
+    */
 
-        if ($user->role === 'superadmin') {
+    if ($user->role === 'superadmin') {
 
-            $hostels = Hostel::where('status', 'active')
-                ->latest()
-                ->get();
+        // Admin is currently inside a hostel
+        if (session('current_hostel_id')) {
 
-            return view('owner.profile', compact(
-                'user',
-                'hostels'
+            $hostel = Hostel::findOrFail(
+                session('current_hostel_id')
+            );
+
+            // Find warden of this hostel
+           $warden = User::where('role', 'warden')
+                ->where('hostel_id', $hostel->id)
+                ->first();
+
+            return view('warden.profile', compact(
+                'warden',
+                'hostel'
             ));
-        }
+                    }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Warden
-        |--------------------------------------------------------------------------
-        */
+        // Admin Global Profile
 
-        if ($user->role === 'warden') {
+        $hostels = Hostel::where('status', 'active')
+            ->latest()
+            ->get();
 
-            if (!$user->hostel_id) {
-                abort(403, 'No hostel is assigned to this account.');
-            }
-
-            $hostels = Hostel::where('id', $user->hostel_id)
-                ->where('status', 'active')
-                ->get();
-
-            return view('owner.profile', compact(
-                'user',
-                'hostels'
-            ));
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Invalid Role
-        |--------------------------------------------------------------------------
-        */
-
-        abort(403, 'Invalid user role.');
+        return view('owner.profile', compact(
+            'user',
+            'hostels'
+        ));
     }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | WARDEN
+    |--------------------------------------------------------------------------
+    */
+
+    if ($user->role === 'warden') {
+
+        if (!$user->hostel_id) {
+            abort(403, 'No hostel is assigned to this account.');
+        }
+
+        $hostel = $user->hostel;
+
+        return view('warden.profile', compact(
+            'user',
+            'hostel'
+        ));
+    }
+
+
+    abort(403, 'Invalid user role.');
+}
 
 
     public function enterHostel(Hostel $hostel)
@@ -137,4 +151,22 @@ class OwnerController extends Controller
 
     return redirect()->route('dashboard');
 }
+
+
+          public function switchHostel()
+{
+    $user = Auth::user();
+
+    if ($user->role !== 'superadmin') {
+        abort(403, 'You are not allowed to switch hostels.');
+    }
+
+    $hostels = Hostel::where('status', 'active')
+        ->orderBy('name')
+        ->get();
+
+    return view('owner.switch-hostel', compact('hostels'));
+}
+         
+
 }

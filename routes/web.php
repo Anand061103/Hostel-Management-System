@@ -30,6 +30,9 @@ Route::get('/owner/hostels/{hostel}/enter', [OwnerController::class, 'enterHoste
 Route::get('/profile', [OwnerController::class, 'profile'])->middleware('auth')->name('profile');
 Route::get('/owner/exit-hostel', [OwnerController::class, 'exitHostel'])->middleware('auth')->name('owner.exitHostel');
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('auth')->name('dashboard');
+Route::get('/owner/switch-hostel', [OwnerController::class, 'switchHostel'])->middleware('auth')->name('owner.switchHostel');
+
+
 
 Route::delete('/students/bulk-delete', [StudentController::class, 'bulkDestroy'])->name('students.bulkDestroy');
 Route::resource('students', StudentController::class)->middleware('auth');
