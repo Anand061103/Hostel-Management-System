@@ -19,13 +19,81 @@ use Illuminate\Support\Facades\Storage;
 class StudentController extends Controller
 {
     /**
+     * Get current hostel ID according to logged-in user.
+     */
+    private function currentHostelId()
+    {
+        $user = Auth::user();
+
+        if ($user->role === 'superadmin') {
+
+            $hostelId = session('current_hostel_id');
+
+            if (!$hostelId) {
+                abort(403, 'Please select a hostel first.');
+            }
+
+            return $hostelId;
+        }
+
+        if ($user->role === 'warden') {
+
+            if (!$user->hostel_id) {
+                abort(403, 'No hostel is assigned to this account.');
+            }
+
+            return $user->hostel_id;
+        }
+
+        abort(403, 'Invalid user role.');
+    }
+
+    /**
+     * Ensure student belongs to current hostel.
+     */
+    private function ensureStudentAccess(Student $student): void
+    {
+        $hostelId = $this->currentHostelId();
+
+        if ((int) $student->hostel_id !== (int) $hostelId) {
+            abort(403, 'You do not have access to this student.');
+        }
+    }
+
+    /**
      * Display a listing of students.
      */
     public function index()
     {
+        $user = Auth::user();
+
+        if ($user->role === 'superadmin') {
+
+            $hostelId = session('current_hostel_id');
+
+            if (!$hostelId) {
+                return redirect()
+                    ->route('profile')
+                    ->with('error', 'Please select a hostel first.');
+            }
+
+        } elseif ($user->role === 'warden') {
+
+            $hostelId = $user->hostel_id;
+
+            if (!$hostelId) {
+                abort(403, 'No hostel is assigned to this account.');
+            }
+
+        } else {
+
+            abort(403, 'Invalid user role.');
+        }
+
         $students = Student::with([
             'currentAssignment.bed.room',
         ])
+            ->where('hostel_id', $hostelId)
             ->latest()
             ->paginate(10);
 
@@ -36,53 +104,53 @@ class StudentController extends Controller
      * Show the form for creating a new student.
      */
     public function create()
-{
-    $floors = [
-        0 => 'Ground Floor',
-        1 => 'First Floor',
-        2 => 'Second Floor',
-        3 => 'Third Floor',
-        4 => 'Fourth Floor',
-        5 => 'Fifth Floor',
-    ];
+    {
+        $floors = [
+            0 => 'Ground Floor',
+            1 => 'First Floor',
+            2 => 'Second Floor',
+            3 => 'Third Floor',
+            4 => 'Fourth Floor',
+            5 => 'Fifth Floor',
+        ];
 
-    $user = Auth::user();
+        $user = Auth::user();
 
-    if ($user->role === 'superadmin') {
+        if ($user->role === 'superadmin') {
 
-        $hostelId = session('current_hostel_id');
+            $hostelId = session('current_hostel_id');
 
-        if (!$hostelId) {
-            return redirect()
-                ->route('owner.profile')
-                ->with('error', 'Please select a hostel first.');
+            if (!$hostelId) {
+                return redirect()
+                    ->route('profile')
+                    ->with('error', 'Please select a hostel first.');
+            }
+
+        } elseif ($user->role === 'warden') {
+
+            $hostelId = $user->hostel_id;
+
+            if (!$hostelId) {
+                abort(403, 'No hostel is assigned to this account.');
+            }
+
+        } else {
+
+            abort(403, 'Invalid user role.');
         }
 
-    } elseif ($user->role === 'warden') {
+        $rooms = Room::with([
+            'beds' => function ($query) {
+                $query->where('status', 'available');
+            },
+        ])
+            ->where('hostel_id', $hostelId)
+            ->where('status', 'active')
+            ->orderBy('room_number')
+            ->get();
 
-        $hostelId = $user->hostel_id;
-
-        if (!$hostelId) {
-            abort(403, 'No hostel is assigned to this account.');
-        }
-
-    } else {
-
-        abort(403, 'Invalid user role.');
+        return view('students.create', compact('floors', 'rooms'));
     }
-
-    $rooms = Room::with([
-        'beds' => function ($query) {
-            $query->where('status', 'available');
-        },
-    ])
-        ->where('hostel_id', $hostelId)
-        ->where('status', 'active')
-        ->orderBy('room_number')
-        ->get();
-
-    return view('students.create', compact('floors', 'rooms'));
-}
 
     /**
      * Store a newly created student.
@@ -144,6 +212,7 @@ class StudentController extends Controller
                 'nullable',
                 'in:cash,upi,bank_transfer,card,other',
             ],
+
             'fee_due_date' => [
                 'required',
                 'date',
@@ -193,7 +262,7 @@ class StudentController extends Controller
 
             $hostelId = session('current_hostel_id');
 
-            if (! $hostelId) {
+            if (!$hostelId) {
                 return back()
                     ->withInput()
                     ->with('error', 'Please select a hostel first.');
@@ -203,7 +272,7 @@ class StudentController extends Controller
 
             $hostelId = $user->hostel_id;
 
-            if (! $hostelId) {
+            if (!$hostelId) {
                 abort(403, 'No hostel is assigned to this account.');
             }
 
@@ -218,32 +287,48 @@ class StudentController extends Controller
         |--------------------------------------------------------------------------
         */
 
+        $room = Room::findOrFail($data['room_id']);
+
+        // Room must belong to current hostel
+        if ((int) $room->hostel_id !== (int) $hostelId) {
+            abort(403, 'You do not have access to this room.');
+        }
+
         $bed = Bed::with('room')->findOrFail($data['bed_id']);
 
-        if (! $bed->room) {
+        if (!$bed->room) {
             return back()
                 ->withInput()
                 ->with('error', 'The selected bed does not belong to a valid room.');
         }
 
+        // Bed must belong to selected room
         if ((int) $bed->room_id !== (int) $data['room_id']) {
             return back()
                 ->withInput()
                 ->with('error', 'The selected bed does not belong to the selected room.');
         }
 
+        // Room must belong to selected floor
         if ((int) $bed->room->floor !== (int) $data['floor']) {
             return back()
                 ->withInput()
                 ->with('error', 'The selected room does not belong to the selected floor.');
         }
 
+        // Room must be active
         if ($bed->room->status !== 'active') {
             return back()
                 ->withInput()
                 ->with('error', 'This room is inactive and cannot be assigned.');
         }
 
+        // Bed must belong to current hostel
+        if ((int) $bed->room->hostel_id !== (int) $hostelId) {
+            abort(403, 'You do not have access to this bed.');
+        }
+
+        // Bed must be available
         if ($bed->status !== 'available') {
             return back()
                 ->withInput()
@@ -256,9 +341,16 @@ class StudentController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        DB::transaction(function () use ($request, $data, $bed, $hostelId) {
+        DB::transaction(function () use (
+            $request,
+            $data,
+            $bed,
+            $hostelId
+        ) {
+
             // Upload image
             if ($request->hasFile('image')) {
+
                 $data['image'] = $request->file('image')
                     ->store('students', 'public');
             }
@@ -314,8 +406,10 @@ class StudentController extends Controller
                 FeePayment::create([
                     'fee_id' => $monthlyFee->id,
                     'amount' => $initialPayment,
-                    'payment_date' => $data['payment_date'] ?? $data['joining_date'],
-                    'payment_method' => $data['payment_method'] ?? 'cash',
+                    'payment_date' => $data['payment_date']
+                        ?? $data['joining_date'],
+                    'payment_method' => $data['payment_method']
+                        ?? 'cash',
                 ]);
 
                 $monthlyFee->update([
@@ -346,7 +440,8 @@ class StudentController extends Controller
                 'paid_amount' => $securityPaid,
                 'status' => $securityStatus,
                 'received_date' => $securityPaid > 0
-                    ? ($data['security_received_date'] ?? $data['joining_date'])
+                    ? ($data['security_received_date']
+                        ?? $data['joining_date'])
                     : null,
             ]);
 
@@ -363,7 +458,8 @@ class StudentController extends Controller
                     'amount' => $securityPaid,
                     'payment_date' => $data['security_received_date']
                         ?? $data['joining_date'],
-                    'payment_method' => $data['payment_method'] ?? 'cash',
+                    'payment_method' => $data['payment_method']
+                        ?? 'cash',
                     'reference_no' => null,
                     'notes' => 'Security deposit received during admission.',
                 ]);
@@ -395,7 +491,10 @@ class StudentController extends Controller
 
         return redirect()
             ->route('students.index')
-            ->with('success', 'Student admitted successfully with fee, security deposit and bed assignment.');
+            ->with(
+                'success',
+                'Student admitted successfully with fee, security deposit and bed assignment.'
+            );
     }
 
     /**
@@ -403,6 +502,8 @@ class StudentController extends Controller
      */
     public function show(Student $student)
     {
+        $this->ensureStudentAccess($student);
+
         return view('students.show', compact('student'));
     }
 
@@ -411,6 +512,8 @@ class StudentController extends Controller
      */
     public function edit(Student $student)
     {
+        $this->ensureStudentAccess($student);
+
         return view('students.edit', compact('student'));
     }
 
@@ -419,6 +522,8 @@ class StudentController extends Controller
      */
     public function update(Request $request, Student $student)
     {
+        $this->ensureStudentAccess($student);
+
         $data = $request->validate([
             'full_name' => ['required', 'string', 'max:255'],
             'father_name' => ['required', 'string', 'max:255'],
@@ -426,14 +531,14 @@ class StudentController extends Controller
             'email' => [
                 'nullable',
                 'email',
-                'unique:students,email,'.$student->id,
+                'unique:students,email,' . $student->id,
             ],
 
             'aadhar_number' => [
                 'required',
                 'string',
                 'size:12',
-                'unique:students,aadhar_number,'.$student->id,
+                'unique:students,aadhar_number,' . $student->id,
             ],
 
             'mobile_number' => ['required', 'string', 'max:15'],
@@ -475,6 +580,8 @@ class StudentController extends Controller
      */
     public function destroy(Student $student)
     {
+        $this->ensureStudentAccess($student);
+
         // Delete student image
         if ($student->image) {
             Storage::disk('public')->delete($student->image);
@@ -488,6 +595,9 @@ class StudentController extends Controller
             ->with('success', 'Student deleted successfully.');
     }
 
+    /**
+     * Bulk delete students.
+     */
     public function bulkDestroy(Request $request)
     {
         $studentIds = $request->input('student_ids', []);
@@ -498,7 +608,23 @@ class StudentController extends Controller
                 ->with('error', 'Please select at least one student.');
         }
 
-        $students = Student::whereIn('id', $studentIds)->get();
+        $hostelId = $this->currentHostelId();
+
+        // Only get students from current hostel
+        $students = Student::whereIn('id', $studentIds)
+            ->where('hostel_id', $hostelId)
+            ->get();
+
+        if ($students->isEmpty()) {
+            return redirect()
+                ->route('students.index')
+                ->with(
+                    'error',
+                    'No selected students belong to the current hostel.'
+                );
+        }
+
+        $deletedCount = $students->count();
 
         foreach ($students as $student) {
 
@@ -513,6 +639,9 @@ class StudentController extends Controller
 
         return redirect()
             ->route('students.index')
-            ->with('success', count($studentIds).' students deleted successfully.');
+            ->with(
+                'success',
+                $deletedCount . ' students deleted successfully.'
+            );
     }
 }
