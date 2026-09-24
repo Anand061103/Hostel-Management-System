@@ -56,4 +56,8 @@ class Student extends Model
     {
         return $this->belongsTo(Hostel::class);
     }
+    public function checkout()
+{
+    return $this->hasOne(Checkout::class);
+}
 }

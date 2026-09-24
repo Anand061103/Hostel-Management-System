@@ -6,33 +6,104 @@ use App\Models\Fee;
 use App\Models\FeePayment;
 use App\Models\Student;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class FeeController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Get current hostel ID.
+     */
+    private function currentHostelId()
+    {
+        $user = Auth::user();
+
+        if ($user->role === 'superadmin') {
+
+            $hostelId = session('current_hostel_id');
+
+            if (!$hostelId) {
+                abort(403, 'Please select a hostel first.');
+            }
+
+            return $hostelId;
+        }
+
+        if ($user->role === 'warden') {
+
+            if (!$user->hostel_id) {
+                abort(403, 'No hostel is assigned to this account.');
+            }
+
+            return $user->hostel_id;
+        }
+
+        abort(403, 'Invalid user role.');
+    }
+
+    /**
+     * Ensure fee belongs to current hostel.
+     */
+    private function ensureFeeAccess(Fee $fee): void
+    {
+        $hostelId = $this->currentHostelId();
+
+        $fee->loadMissing('student');
+
+        if (!$fee->student) {
+            abort(404, 'Student not found for this fee.');
+        }
+
+        if ((int) $fee->student->hostel_id !== (int) $hostelId) {
+            abort(403, 'You do not have access to this fee.');
+        }
+    }
+
+    /**
+     * Display a listing of fees.
      */
     public function index()
     {
+        $hostelId = $this->currentHostelId();
+
         $fees = Fee::with([
             'student',
             'payments',
         ])
+            ->whereHas('student', function ($query) use ($hostelId) {
+                $query->where('hostel_id', $hostelId);
+            })
             ->latest()
             ->paginate(10);
 
-        $totalFeeAmount = Fee::sum('amount');
+        /*
+        |--------------------------------------------------------------------------
+        | Hostel-specific totals
+        |--------------------------------------------------------------------------
+        */
 
-        $totalPaid = FeePayment::sum('amount');
+        $hostelFees = Fee::whereHas('student', function ($query) use ($hostelId) {
+            $query->where('hostel_id', $hostelId);
+        });
 
-        $totalOutstanding = max(0, $totalFeeAmount - $totalPaid);
+        $totalFeeAmount = (clone $hostelFees)->sum('amount');
 
-        $pendingFees = Fee::whereIn('status', [
-            'pending',
-            'partial',
-        ])->count();
+        $totalPaid = FeePayment::whereHas('fee.student', function ($query) use ($hostelId) {
+            $query->where('hostel_id', $hostelId);
+        })->sum('amount');
+
+        $totalOutstanding = max(
+            0,
+            $totalFeeAmount - $totalPaid
+        );
+
+        $pendingFees = (clone $hostelFees)
+            ->whereIn('status', [
+                'pending',
+                'partial',
+            ])
+            ->count();
 
         return view('fees.index', compact(
             'fees',
@@ -44,17 +115,26 @@ class FeeController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Show fee creation form.
      */
     public function create()
     {
-        $students = Student::orderBy('full_name')->get();
+        $hostelId = $this->currentHostelId();
+
+        $students = Student::where('hostel_id', $hostelId)
+            ->orderBy('full_name')
+            ->get();
 
         return view('fees.create', compact('students'));
     }
 
+    /**
+     * Record fee payment.
+     */
     public function recordPayment(Request $request, Fee $fee)
     {
+        $this->ensureFeeAccess($fee);
+
         $validated = $request->validate([
             'amount' => [
                 'required',
@@ -87,19 +167,22 @@ class FeeController extends Controller
 
         DB::transaction(function () use ($fee, $validated) {
 
-            // Lock this fee while processing the payment
             $fee = Fee::where('id', $fee->id)
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            // Calculate already paid amount
+            $fee->load('student');
+
+            $this->ensureFeeAccess($fee);
+
             $paidAmount = $fee->payments()->sum('amount');
 
-            // Calculate remaining amount
-            $remainingAmount = (float) $fee->amount - (float) $paidAmount;
+            $remainingAmount =
+                (float) $fee->amount
+                - (float) $paidAmount;
 
-            // Prevent overpayment
             if ((float) $validated['amount'] > $remainingAmount) {
+
                 throw ValidationException::withMessages([
                     'amount' => [
                         'Payment amount cannot be greater than the remaining amount of ₹'
@@ -108,7 +191,6 @@ class FeeController extends Controller
                 ]);
             }
 
-            // Create payment record
             FeePayment::create([
                 'fee_id' => $fee->id,
                 'amount' => $validated['amount'],
@@ -118,39 +200,32 @@ class FeeController extends Controller
                 'notes' => $validated['notes'] ?? null,
             ]);
 
-            // Calculate new paid amount
-            $newPaidAmount = (float) $paidAmount + (float) $validated['amount'];
+            $newPaidAmount =
+                (float) $paidAmount
+                + (float) $validated['amount'];
 
-            // Update fee status
-            if ($newPaidAmount >= (float) $fee->amount) {
-
-                $fee->update([
-                    'status' => 'paid',
-                ]);
-
-            } else {
-
-                $fee->update([
-                    'status' => 'partial',
-                ]);
-            }
+            $fee->update([
+                'status' => $newPaidAmount >= (float) $fee->amount
+                    ? 'paid'
+                    : 'partial',
+            ]);
         });
 
         return redirect()
             ->route('fees.index')
-            ->with('success', 'Payment recorded successfully.');
+            ->with(
+                'success',
+                'Payment recorded successfully.'
+            );
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         //
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified fee.
      */
     public function show(string $id)
     {
@@ -159,28 +234,21 @@ class FeeController extends Controller
             'payments',
         ])->findOrFail($id);
 
+        $this->ensureFeeAccess($fee);
+
         return view('fees.show', compact('fee'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         //
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         //

@@ -5,67 +5,146 @@ namespace App\Http\Controllers;
 use App\Models\SecurityDeposit;
 use App\Models\SecurityPayment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class SecurityDepositController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Get current hostel ID.
+     */
+    private function currentHostelId()
+    {
+        $user = Auth::user();
+
+        if ($user->role === 'superadmin') {
+
+            $hostelId = session('current_hostel_id');
+
+            if (!$hostelId) {
+                abort(403, 'Please select a hostel first.');
+            }
+
+            return $hostelId;
+        }
+
+        if ($user->role === 'warden') {
+
+            if (!$user->hostel_id) {
+                abort(403, 'No hostel is assigned to this account.');
+            }
+
+            return $user->hostel_id;
+        }
+
+        abort(403, 'Invalid user role.');
+    }
+
+    /**
+     * Ensure security deposit belongs to current hostel.
+     */
+    private function ensureSecurityAccess(
+        SecurityDeposit $securityDeposit
+    ): void {
+        $hostelId = $this->currentHostelId();
+
+        $securityDeposit->loadMissing('student');
+
+        if (!$securityDeposit->student) {
+            abort(
+                404,
+                'Student not found for this security deposit.'
+            );
+        }
+
+        if (
+            (int) $securityDeposit->student->hostel_id
+            !== (int) $hostelId
+        ) {
+            abort(
+                403,
+                'You do not have access to this security deposit.'
+            );
+        }
+    }
+
+    /**
+     * Display a listing of security deposits.
      */
     public function index()
     {
+        $hostelId = $this->currentHostelId();
+
         $securityDeposits = SecurityDeposit::with([
             'student',
             'payments',
         ])
+            ->whereHas('student', function ($query) use ($hostelId) {
+                $query->where('hostel_id', $hostelId);
+            })
             ->latest()
             ->paginate(10);
 
-        $totalRequired = SecurityDeposit::sum('required_amount');
 
-        $totalPaid = SecurityDeposit::sum('paid_amount');
+        /*
+        |--------------------------------------------------------------------------
+        | Hostel-specific totals
+        |--------------------------------------------------------------------------
+        */
+
+        $hostelDeposits = SecurityDeposit::whereHas(
+            'student',
+            function ($query) use ($hostelId) {
+                $query->where('hostel_id', $hostelId);
+            }
+        );
+
+        $totalRequired = (clone $hostelDeposits)
+            ->sum('required_amount');
+
+        $totalPaid = (clone $hostelDeposits)
+            ->sum('paid_amount');
 
         $totalOutstanding = max(
             0,
             $totalRequired - $totalPaid
         );
 
-        $pendingDeposits = SecurityDeposit::where(
-            'status',
-            'pending'
-        )->count();
+        $pendingDeposits = (clone $hostelDeposits)
+            ->where('status', 'pending')
+            ->count();
 
-        return view('security_deposits.index', compact(
-            'securityDeposits',
-            'totalRequired',
-            'totalPaid',
-            'totalOutstanding',
-            'pendingDeposits'
-        ));
+
+        return view(
+            'security_deposits.index',
+            compact(
+                'securityDeposits',
+                'totalRequired',
+                'totalPaid',
+                'totalOutstanding',
+                'pendingDeposits'
+            )
+        );
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         //
     }
 
     /**
-     * Display the specified resource.
+     * Display specified security deposit.
      */
     public function show(SecurityDeposit $securityDeposit)
     {
+        $this->ensureSecurityAccess($securityDeposit);
+
         $securityDeposit->load([
             'student',
             'payments' => function ($query) {
@@ -84,32 +163,30 @@ class SecurityDepositController extends Controller
         );
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         //
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         //
     }
 
-    public function recordPayment(Request $request, SecurityDeposit $securityDeposit)
-    {
+    /**
+     * Record security payment.
+     */
+    public function recordPayment(
+        Request $request,
+        SecurityDeposit $securityDeposit
+    ) {
+        $this->ensureSecurityAccess($securityDeposit);
+
         $validated = $request->validate([
             'amount' => [
                 'required',
@@ -140,9 +217,11 @@ class SecurityDepositController extends Controller
             ],
         ]);
 
-        DB::transaction(function () use ($securityDeposit, $validated) {
+        DB::transaction(function () use (
+            $securityDeposit,
+            $validated
+        ) {
 
-            // Lock security deposit while processing payment
             $securityDeposit = SecurityDeposit::where(
                 'id',
                 $securityDeposit->id
@@ -150,16 +229,19 @@ class SecurityDepositController extends Controller
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            // Current paid amount
-            $paidAmount = (float) $securityDeposit->paid_amount;
+            $this->ensureSecurityAccess($securityDeposit);
 
-            // Remaining amount
+            $paidAmount =
+                (float) $securityDeposit->paid_amount;
+
             $remainingAmount =
                 (float) $securityDeposit->required_amount
                 - $paidAmount;
 
-            // Prevent overpayment
-            if ((float) $validated['amount'] > $remainingAmount) {
+            if (
+                (float) $validated['amount']
+                > $remainingAmount
+            ) {
 
                 throw ValidationException::withMessages([
                     'amount' => [
@@ -169,21 +251,21 @@ class SecurityDepositController extends Controller
                 ]);
             }
 
-            // Create payment history
             SecurityPayment::create([
                 'security_deposit_id' => $securityDeposit->id,
                 'amount' => $validated['amount'],
                 'payment_date' => $validated['payment_date'],
                 'payment_method' => $validated['payment_method'],
-                'reference_no' => $validated['reference_no'] ?? null,
-                'notes' => $validated['notes'] ?? null,
+                'reference_no' =>
+                    $validated['reference_no'] ?? null,
+                'notes' =>
+                    $validated['notes'] ?? null,
             ]);
 
-            // New paid amount
             $newPaidAmount =
-                $paidAmount + (float) $validated['amount'];
+                $paidAmount
+                + (float) $validated['amount'];
 
-            // Update security deposit
             $securityDeposit->update([
                 'paid_amount' => $newPaidAmount,
 
@@ -192,12 +274,16 @@ class SecurityDepositController extends Controller
                         ? 'held'
                         : 'pending',
 
-                'received_date' => $validated['payment_date'],
+                'received_date' =>
+                    $validated['payment_date'],
             ]);
         });
 
         return redirect()
             ->route('security-deposits.index')
-            ->with('success', 'Security payment recorded successfully.');
+            ->with(
+                'success',
+                'Security payment recorded successfully.'
+            );
     }
 }

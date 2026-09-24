@@ -42,6 +42,9 @@ public function currentAssignment()
         });
 }
 
-
+public function checkouts()
+{
+    return $this->hasMany(Checkout::class);
+}
 
 }

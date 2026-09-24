@@ -25,4 +25,8 @@ class Room extends Model
     {
         return $this->belongsTo(Hostel::class);
     }
+    public function checkouts()
+{
+    return $this->hasMany(Checkout::class);
+}
 }

@@ -10,6 +10,7 @@ use App\Http\Controllers\RoomController;
 use App\Http\Controllers\SecurityDepositController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\WardenController;
+use App\Http\Controllers\CheckoutController;
 use App\Models\Hostel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -74,3 +75,8 @@ Route::get('/hostel/dashboard', function () {
 })
     ->middleware('auth')
     ->name('hostel.dashboard');
+
+
+Route::get('/students/{student}/checkout', [CheckoutController::class, 'create'])->name('students.checkout.create');
+Route::post('/students/{student}/checkout', [CheckoutController::class, 'store'])->name('students.checkout.store');
+Route::post('/students/{student}/checkout/pay-fees', [CheckoutController::class, 'payFees'])->name('students.checkout.payFees');
