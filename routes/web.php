@@ -11,6 +11,7 @@ use App\Http\Controllers\SecurityDepositController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\WardenController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\PasswordRecoveryController;
 use App\Models\Hostel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -28,7 +29,28 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::get('/owner/profile', [OwnerController::class, 'profile'])->middleware('auth')->name('owner.profile');
 Route::get('/owner/hostels/{hostel}/enter', [OwnerController::class, 'enterHostel'])->middleware('auth')->name('owner.hostels.enter');
+
+
+
+
+Route::get('/owner/profile', [OwnerController::class, 'profile'])->middleware('auth')->name('owner.profile');
 Route::get('/profile', [OwnerController::class, 'profile'])->middleware('auth')->name('profile');
+Route::get('/profile/edit', [OwnerController::class, 'editProfile'])->middleware('auth')->name('profile.edit');
+Route::put('/profile', [OwnerController::class, 'updateProfile'])->middleware('auth')->name('profile.update');
+Route::get('/profile/change-email', [OwnerController::class, 'editEmail'])->middleware('auth')->name('profile.email.edit');
+Route::put('/profile/change-email', [OwnerController::class, 'updateEmail'])->middleware('auth')->name('profile.email.update');
+Route::get('/profile/change-password', [OwnerController::class, 'editPassword'])->middleware('auth')->name('profile.password.edit');
+Route::put('/profile/change-password', [OwnerController::class, 'updatePassword'])->middleware('auth')->name('profile.password.update');
+
+
+// Password Recovery
+Route::get('/password/forgot', [PasswordRecoveryController::class, 'showForgotForm'])->middleware('auth')->name('password.request');
+Route::post('/password/forgot', [PasswordRecoveryController::class, 'sendResetLink'])->middleware('auth')->name('password.email');
+Route::get('/password/reset/{token}', [PasswordRecoveryController::class, 'showResetForm'])->middleware('guest')->name('password.reset');
+Route::post('/password/reset', [PasswordRecoveryController::class, 'resetPassword'])->middleware('guest')->name('password.update');
+
+
+
 Route::get('/owner/exit-hostel', [OwnerController::class, 'exitHostel'])->middleware('auth')->name('owner.exitHostel');
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('auth')->name('dashboard');
 Route::get('/owner/switch-hostel', [OwnerController::class, 'switchHostel'])->middleware('auth')->name('owner.switchHostel');

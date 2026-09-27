@@ -147,6 +147,19 @@
             </div>
 
         </nav>
+        {{-- Logout --}}
+        <div class="mt-auto border-t border-slate-800 p-4">
+            <form action="{{ route('logout') }}" method="POST">
+                @csrf
+
+                <button type="submit"
+                    class="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-slate-300 hover:bg-red-500/10 hover:text-red-400">
+                    <span>🚪</span>
+                    <span>Logout</span>
+                </button>
+            </form>
+
+        </div>
 
     </div>
 
