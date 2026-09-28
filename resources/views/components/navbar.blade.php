@@ -1,3 +1,18 @@
+```blade
+@php
+    $authUser = auth()->user();
+    $isLoggedIn = auth()->check();
+
+    $isSuperAdmin = $authUser?->role === 'superadmin';
+    $isWarden = $authUser?->role === 'warden';
+
+    $currentHostel = null;
+
+    if ($isLoggedIn && $isSuperAdmin && session('current_hostel_id')) {
+        $currentHostel = \App\Models\Hostel::find(session('current_hostel_id'));
+    }
+@endphp
+
 <header class="sticky top-0 z-30 border-b border-slate-200
            bg-white dark:border-slate-700 dark:bg-slate-900">
 
@@ -6,11 +21,7 @@
         {{-- Left --}}
         <div>
 
-            @if (auth()->user()->role === 'superadmin' && session('current_hostel_id'))
-                @php
-                    $currentHostel = \App\Models\Hostel::find(session('current_hostel_id'));
-                @endphp
-
+            @if ($isLoggedIn && $isSuperAdmin && session('current_hostel_id'))
                 <h2 class="text-xl font-semibold text-slate-800 dark:text-white">
                     {{ $currentHostel?->name ?? 'Hostel' }}
                 </h2>
@@ -18,21 +29,29 @@
                 <p class="text-sm text-slate-500 dark:text-slate-400">
                     Hostel Management
                 </p>
-            @elseif(auth()->user()->role === 'warden')
+            @elseif ($isLoggedIn && $isWarden)
                 <h2 class="text-xl font-semibold text-slate-800 dark:text-white">
-                    {{ auth()->user()->hostel?->name ?? 'Hostel' }}
+                    {{ $authUser->hostel?->name ?? 'Hostel' }}
                 </h2>
 
                 <p class="text-sm text-slate-500 dark:text-slate-400">
                     Hostel Management
                 </p>
-            @else
+            @elseif ($isLoggedIn)
                 <h2 class="text-xl font-semibold text-slate-800 dark:text-white">
                     Dashboard
                 </h2>
 
                 <p class="text-sm text-slate-500 dark:text-slate-400">
-                    Welcome back, {{ auth()->user()->name ?? 'Admin' }}
+                    Welcome back, {{ $authUser->name ?? 'Admin' }}
+                </p>
+            @else
+                <h2 class="text-xl font-semibold text-slate-800 dark:text-white">
+                    Hostel Management
+                </h2>
+
+                <p class="text-sm text-slate-500 dark:text-slate-400">
+                    Password Recovery
                 </p>
             @endif
 
@@ -44,7 +63,7 @@
 
 
             {{-- Back to Global Panel --}}
-            @if (auth()->user()->role === 'superadmin' && session('current_hostel_id'))
+            @if ($isLoggedIn && $isSuperAdmin && session('current_hostel_id'))
                 <a href="{{ route('owner.exitHostel') }}"
                     class="rounded-lg border border-slate-200
                            bg-white px-3 py-2 text-sm font-medium
@@ -60,22 +79,25 @@
                 </a>
             @endif
 
-            {{-- switch hostel  --}}
-            @if (auth()->user()->role === 'superadmin' && session('current_hostel_id'))
+
+            {{-- Switch Hostel --}}
+            @if ($isLoggedIn && $isSuperAdmin && session('current_hostel_id'))
                 <a href="{{ route('owner.switchHostel') }}"
                     class="rounded-lg border border-slate-200
-               bg-white px-3 py-2 text-sm font-medium
-               text-slate-700 transition
-               hover:bg-slate-100
-               dark:border-slate-700
-               dark:bg-slate-800
-               dark:text-slate-200
-               dark:hover:bg-slate-700">
+                           bg-white px-3 py-2 text-sm font-medium
+                           text-slate-700 transition
+                           hover:bg-slate-100
+                           dark:border-slate-700
+                           dark:bg-slate-800
+                           dark:text-slate-200
+                           dark:hover:bg-slate-700">
 
                     🔄 Switch Hostel
 
                 </a>
             @endif
+
+
             {{-- Theme Toggle --}}
             <button id="theme-toggle" type="button">
 
@@ -85,32 +107,32 @@
 
 
             {{-- Notification --}}
-            <button
-                class="relative rounded-full p-2
-                       text-slate-500 hover:bg-slate-100
-                       hover:text-slate-700
-                       dark:text-slate-400
-                       dark:hover:bg-slate-800">
+            @if ($isLoggedIn)
+                <button
+                    class="relative rounded-full p-2
+                           text-slate-500 hover:bg-slate-100
+                           hover:text-slate-700
+                           dark:text-slate-400
+                           dark:hover:bg-slate-800">
 
-                <span class="text-xl">🔔</span>
+                    <span class="text-xl">🔔</span>
 
-                <span class="absolute right-1 top-1 h-2.5 w-2.5
-                           rounded-full bg-red-500">
-                </span>
+                    <span
+                        class="absolute right-1 top-1 h-2.5 w-2.5
+                               rounded-full bg-red-500">
+                    </span>
 
-            </button>
+                </button>
+            @endif
 
 
             {{-- Profile --}}
-            <a href="{{ route('profile') }}"
-                class="flex items-center gap-3 rounded-lg px-2 py-1
-           transition hover:bg-slate-100
-           dark:hover:bg-slate-800">
+            @if ($isLoggedIn)
 
                 @php
-                    $profileUser = auth()->user();
+                    $profileUser = $authUser;
 
-                    if ($profileUser->role === 'superadmin' && session('current_hostel_id')) {
+                    if ($isSuperAdmin && session('current_hostel_id')) {
                         $profileHostel = \App\Models\Hostel::find(session('current_hostel_id'));
 
                         $profileUser = $profileHostel
@@ -119,34 +141,43 @@
                     }
                 @endphp
 
-                <div
-                    class="flex h-10 w-10 items-center justify-center
-               rounded-full bg-blue-600
-               font-semibold text-white">
 
-                    {{ strtoupper(substr($profileUser?->name ?? 'A', 0, 1)) }}
+                <a href="{{ route('profile') }}"
+                    class="flex items-center gap-3 rounded-lg px-2 py-1
+                           transition hover:bg-slate-100
+                           dark:hover:bg-slate-800">
 
-                </div>
+                    <div
+                        class="flex h-10 w-10 items-center justify-center
+                               rounded-full bg-blue-600
+                               font-semibold text-white">
 
-                <div class="hidden sm:block">
+                        {{ strtoupper(substr($profileUser?->name ?? 'A', 0, 1)) }}
 
-                    <p class="text-sm font-semibold text-slate-800 dark:text-white">
-                        {{ $profileUser?->name ?? 'Admin' }}
-                    </p>
+                    </div>
 
-                    <p class="text-xs text-slate-500 dark:text-slate-400">
 
-                        @if (auth()->user()->role === 'superadmin' && session('current_hostel_id'))
-                            Warden
-                        @else
-                            {{ auth()->user()->role === 'superadmin' ? 'Super Admin' : 'Warden' }}
-                        @endif
+                    <div class="hidden sm:block">
 
-                    </p>
+                        <p class="text-sm font-semibold text-slate-800 dark:text-white">
+                            {{ $profileUser?->name ?? 'Admin' }}
+                        </p>
 
-                </div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">
 
-            </a>
+                            @if ($isSuperAdmin && session('current_hostel_id'))
+                                Warden
+                            @else
+                                {{ $isSuperAdmin ? 'Super Admin' : 'Warden' }}
+                            @endif
+
+                        </p>
+
+                    </div>
+
+                </a>
+
+            @endif
 
         </div>
 

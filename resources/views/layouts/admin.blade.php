@@ -15,10 +15,10 @@
     <div class="flex min-h-screen">
 
         {{-- Sidebar --}}
-        @if (auth()->user()->role === 'superadmin' && session('current_hostel_id'))
+        @if (auth()->check() && auth()->user()->role === 'superadmin' && session('current_hostel_id'))
             {{-- Admin inside selected hostel --}}
             @include('components.sidebar')
-        @elseif(auth()->user()->role === 'superadmin')
+        @elseif (auth()->check() && auth()->user()->role === 'superadmin')
             {{-- Admin Global Panel --}}
             @include('components.owner-sidebar')
         @else
