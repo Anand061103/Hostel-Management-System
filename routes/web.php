@@ -43,10 +43,19 @@ Route::get('/profile/change-password', [OwnerController::class, 'editPassword'])
 Route::put('/profile/change-password', [OwnerController::class, 'updatePassword'])->middleware('auth')->name('profile.password.update');
 
 
+
 // Password Recovery
-Route::get('/password/forgot', [PasswordRecoveryController::class, 'showForgotForm'])->middleware('auth')->name('password.request');
-Route::post('/password/forgot', [PasswordRecoveryController::class, 'sendResetLink'])->middleware('auth')->name('password.email');
+
+// Forgot Password Page — login ki zarurat nahi
+Route::get('/password/forgot', [PasswordRecoveryController::class, 'showForgotForm'])->name('password.request');
+
+// Send Reset Link — login ki zarurat nahi
+Route::post('/password/forgot', [PasswordRecoveryController::class, 'sendResetLink'])->name('password.email');
+
+// Reset Password Page — sirf logged-out user
 Route::get('/password/reset/{token}', [PasswordRecoveryController::class, 'showResetForm'])->middleware('guest')->name('password.reset');
+
+// Update Password — sirf logged-out user
 Route::post('/password/reset', [PasswordRecoveryController::class, 'resetPassword'])->middleware('guest')->name('password.update');
 
 
