@@ -39,23 +39,45 @@
 
 
                         {{-- Basic Information --}}
-                        <div>
+                        <div class="flex-1">
 
-                            <h1 class="text-2xl font-bold text-slate-800 dark:text-white">
-                                {{ $warden->name }}
-                            </h1>
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
 
-                            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                                {{ $warden->email }}
-                            </p>
+                                <div>
 
-                            <span
-                                class="mt-2 inline-block rounded-full
-                                       bg-blue-100 px-3 py-1 text-xs font-medium
-                                       text-blue-700
-                                       dark:bg-blue-900/30 dark:text-blue-400">
-                                Warden
-                            </span>
+                                    <h1 class="text-2xl font-bold text-slate-800 dark:text-white">
+                                        {{ $warden->name }}
+                                    </h1>
+
+                                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                                        {{ $warden->email }}
+                                    </p>
+
+                                    <span
+                                        class="mt-3 inline-flex rounded-full
+                       bg-blue-100 px-3 py-1 text-xs font-medium
+                       text-blue-700
+                       dark:bg-blue-900/30 dark:text-blue-400">
+                                        Warden
+                                    </span>
+
+                                </div>
+
+
+                                {{-- Warden can edit own profile --}}
+                                @if (auth()->user()->role === 'warden')
+                                    <a href="{{ route('warden.profile.edit') }}"
+                                        class="inline-flex items-center justify-center
+                       rounded-lg bg-blue-600 px-4 py-2.5
+                       text-sm font-semibold text-white
+                       transition hover:bg-blue-700">
+
+                                        Edit Profile
+
+                                    </a>
+                                @endif
+
+                            </div>
 
                         </div>
 

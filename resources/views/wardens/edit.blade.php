@@ -10,12 +10,12 @@
             <div class="mb-6">
 
                 <div class="mb-3">
-                    <a href="{{ route('wardens.index') }}"
+                    <a href="{{ route('wardens.show', $warden) }}"
                         class="inline-flex items-center gap-2 text-sm font-medium
                                text-slate-500 transition hover:text-blue-600
                                dark:text-slate-400 dark:hover:text-blue-400">
                         <span>←</span>
-                        Back to Wardens
+                        Back to Warden
                     </a>
                 </div>
 
@@ -23,18 +23,17 @@
 
                     <div>
                         <h1 class="text-2xl font-bold text-slate-800 dark:text-white">
-                            Add Warden
+                            Edit Warden
                         </h1>
 
                         <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                            Create a warden account and assign a hostel.
+                            Update {{ $warden->name }}'s information.
                         </p>
                     </div>
 
                     <div
                         class="hidden rounded-lg bg-blue-50 px-3 py-2 text-xs
-                               font-medium text-blue-700
-                               sm:block
+                               font-medium text-blue-700 sm:block
                                dark:bg-blue-900/20 dark:text-blue-400">
                         Warden Account
                     </div>
@@ -44,7 +43,7 @@
             </div>
 
 
-            {{-- Validation Summary --}}
+            {{-- Validation Errors --}}
             @if ($errors->any())
                 <div
                     class="mb-6 rounded-xl border border-red-200
@@ -63,11 +62,9 @@
                             </p>
 
                             <ul class="mt-1 list-inside list-disc text-sm text-red-600 dark:text-red-400">
-
                                 @foreach ($errors->all() as $error)
                                     <li>{{ $error }}</li>
                                 @endforeach
-
                             </ul>
 
                         </div>
@@ -84,9 +81,11 @@
                        bg-white shadow-sm
                        dark:border-slate-800 dark:bg-slate-900">
 
-                <form action="{{ route('wardens.store') }}" method="POST" enctype="multipart/form-data" autocomplete="off">
+                <form action="{{ route('wardens.update', $warden) }}" method="POST" enctype="multipart/form-data"
+                    autocomplete="off">
 
                     @csrf
+                    @method('PUT')
 
 
                     {{-- ================================================= --}}
@@ -112,7 +111,7 @@
                                     </h2>
 
                                     <p class="text-xs text-slate-500 dark:text-slate-400">
-                                        Basic information about the warden.
+                                        Update the warden's personal details.
                                     </p>
                                 </div>
 
@@ -125,8 +124,7 @@
 
                             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 
-
-                                {{-- Warden Name --}}
+                                {{-- Name --}}
                                 <div>
 
                                     <label for="name"
@@ -136,17 +134,16 @@
                                         <span class="text-red-500">*</span>
                                     </label>
 
-                                    <input id="name" type="text" name="name" value="{{ old('name') }}" required
-                                        autofocus autocomplete="name" placeholder="Enter full name"
+                                    <input id="name" type="text" name="name"
+                                        value="{{ old('name', $warden->name) }}" required
                                         class="w-full rounded-xl border border-slate-300
                                                bg-white px-4 py-3 text-sm text-slate-900
-                                               placeholder-slate-400 outline-none transition
+                                               outline-none transition
                                                focus:border-blue-500
                                                focus:ring-2 focus:ring-blue-500/20
                                                dark:border-slate-700
                                                dark:bg-slate-800
-                                               dark:text-white
-                                               dark:placeholder-slate-500">
+                                               dark:text-white">
 
                                     @error('name')
                                         <p class="mt-1.5 text-sm text-red-500">
@@ -167,17 +164,16 @@
                                         <span class="text-red-500">*</span>
                                     </label>
 
-                                    <input id="email" type="email" name="email" value="{{ old('email') }}" required
-                                        autocomplete="email" placeholder="warden@example.com"
+                                    <input id="email" type="email" name="email"
+                                        value="{{ old('email', $warden->email) }}" required
                                         class="w-full rounded-xl border border-slate-300
                                                bg-white px-4 py-3 text-sm text-slate-900
-                                               placeholder-slate-400 outline-none transition
+                                               outline-none transition
                                                focus:border-blue-500
                                                focus:ring-2 focus:ring-blue-500/20
                                                dark:border-slate-700
                                                dark:bg-slate-800
-                                               dark:text-white
-                                               dark:placeholder-slate-500">
+                                               dark:text-white">
 
                                     @error('email')
                                         <p class="mt-1.5 text-sm text-red-500">
@@ -188,7 +184,7 @@
                                 </div>
 
 
-                                {{-- Mobile Number --}}
+                                {{-- Mobile --}}
                                 <div>
 
                                     <label for="mobile_number"
@@ -199,17 +195,15 @@
                                     </label>
 
                                     <input id="mobile_number" type="tel" name="mobile_number"
-                                        value="{{ old('mobile_number') }}" required autocomplete="tel"
-                                        placeholder="Enter mobile number"
+                                        value="{{ old('mobile_number', $warden->mobile_number) }}" required
                                         class="w-full rounded-xl border border-slate-300
                                                bg-white px-4 py-3 text-sm text-slate-900
-                                               placeholder-slate-400 outline-none transition
+                                               outline-none transition
                                                focus:border-blue-500
                                                focus:ring-2 focus:ring-blue-500/20
                                                dark:border-slate-700
                                                dark:bg-slate-800
-                                               dark:text-white
-                                               dark:placeholder-slate-500">
+                                               dark:text-white">
 
                                     @error('mobile_number')
                                         <p class="mt-1.5 text-sm text-red-500">
@@ -230,7 +224,7 @@
                                     </label>
 
                                     <input id="joining_date" type="date" name="joining_date"
-                                        value="{{ old('joining_date') }}"
+                                        value="{{ old('joining_date', optional($warden->joining_date)->format('Y-m-d')) }}"
                                         class="w-full rounded-xl border border-slate-300
                                                bg-white px-4 py-3 text-sm text-slate-900
                                                outline-none transition
@@ -258,17 +252,15 @@
                                         Address
                                     </label>
 
-                                    <textarea id="address" name="address" rows="3" placeholder="Enter complete address"
+                                    <textarea id="address" name="address" rows="3"
                                         class="w-full resize-none rounded-xl border
                                                border-slate-300 bg-white px-4 py-3
-                                               text-sm text-slate-900
-                                               placeholder-slate-400 outline-none transition
-                                               focus:border-blue-500
+                                               text-sm text-slate-900 outline-none
+                                               transition focus:border-blue-500
                                                focus:ring-2 focus:ring-blue-500/20
                                                dark:border-slate-700
                                                dark:bg-slate-800
-                                               dark:text-white
-                                               dark:placeholder-slate-500">{{ old('address') }}</textarea>
+                                               dark:text-white">{{ old('address', $warden->address) }}</textarea>
 
                                     @error('address')
                                         <p class="mt-1.5 text-sm text-red-500">
@@ -279,7 +271,7 @@
                                 </div>
 
 
-                                {{-- Warden Photo --}}
+                                {{-- Current / New Photo --}}
                                 <div class="md:col-span-2">
 
                                     <label for="photo"
@@ -288,23 +280,39 @@
                                         Warden Photo
                                     </label>
 
-                                    <input id="photo" type="file" name="photo"
-                                        accept="image/jpeg,image/png,image/webp"
-                                        class="block w-full rounded-xl border
-                                               border-slate-300 bg-white
-                                               text-sm text-slate-600
-                                               file:mr-4 file:rounded-lg
-                                               file:border-0 file:bg-blue-600
-                                               file:px-4 file:py-2.5
-                                               file:text-sm file:font-semibold
-                                               file:text-white
-                                               hover:file:bg-blue-500
-                                               dark:border-slate-700
-                                               dark:bg-slate-800
-                                               dark:text-slate-300">
+                                    <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+
+                                        @if ($warden->photo)
+                                            <img src="{{ asset('storage/' . $warden->photo) }}" alt="{{ $warden->name }}"
+                                                class="h-16 w-16 rounded-xl object-cover">
+                                        @else
+                                            <div
+                                                class="flex h-16 w-16 items-center justify-center
+                                                       rounded-xl bg-blue-600 font-bold
+                                                       text-white">
+                                                {{ strtoupper(substr($warden->name, 0, 1)) }}
+                                            </div>
+                                        @endif
+
+                                        <input id="photo" type="file" name="photo"
+                                            accept="image/jpeg,image/png,image/webp"
+                                            class="block w-full rounded-xl border
+                                                   border-slate-300 bg-white
+                                                   text-sm text-slate-600
+                                                   file:mr-4 file:rounded-lg
+                                                   file:border-0 file:bg-blue-600
+                                                   file:px-4 file:py-2.5
+                                                   file:text-sm file:font-semibold
+                                                   file:text-white
+                                                   hover:file:bg-blue-500
+                                                   dark:border-slate-700
+                                                   dark:bg-slate-800
+                                                   dark:text-slate-300">
+
+                                    </div>
 
                                     <p class="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
-                                        JPG, PNG or WEBP. Maximum size 2MB.
+                                        Leave empty to keep the current photo. JPG, PNG or WEBP, maximum 2MB.
                                     </p>
 
                                     @error('photo')
@@ -345,7 +353,7 @@
                                     </h2>
 
                                     <p class="text-xs text-slate-500 dark:text-slate-400">
-                                        Assign the hostel and provide identity details.
+                                        Update hostel assignment and identity details.
                                     </p>
                                 </div>
 
@@ -358,8 +366,7 @@
 
                             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 
-
-                                {{-- Assign Hostel --}}
+                                {{-- Hostel --}}
                                 <div>
 
                                     <label for="hostel_id"
@@ -385,18 +392,17 @@
 
                                         @foreach ($hostels as $hostel)
                                             <option value="{{ $hostel->id }}"
-                                                {{ old('hostel_id') == $hostel->id ? 'selected' : '' }}>
+                                                {{ old('hostel_id', $warden->hostel_id) == $hostel->id ? 'selected' : '' }}>
                                                 {{ $hostel->name }}
+
+                                                @if ($warden->hostel_id == $hostel->id)
+                                                    — Current
+                                                @endif
+
                                             </option>
                                         @endforeach
 
                                     </select>
-
-                                    @if ($hostels->isEmpty())
-                                        <p class="mt-1.5 text-sm text-amber-600 dark:text-amber-400">
-                                            No unassigned active hostel is available.
-                                        </p>
-                                    @endif
 
                                     @error('hostel_id')
                                         <p class="mt-1.5 text-sm text-red-500">
@@ -407,7 +413,7 @@
                                 </div>
 
 
-                                {{-- Aadhaar Number --}}
+                                {{-- Aadhaar --}}
                                 <div>
 
                                     <label for="aadhaar_number"
@@ -418,17 +424,16 @@
                                     </label>
 
                                     <input id="aadhaar_number" type="text" name="aadhaar_number"
-                                        value="{{ old('aadhaar_number') }}" required inputmode="numeric" maxlength="20"
-                                        autocomplete="off" placeholder="Enter Aadhaar number"
+                                        value="{{ old('aadhaar_number', $warden->aadhaar_number) }}" required
+                                        inputmode="numeric" maxlength="20" autocomplete="off"
                                         class="w-full rounded-xl border border-slate-300
                                                bg-white px-4 py-3 text-sm text-slate-900
-                                               placeholder-slate-400 outline-none transition
+                                               outline-none transition
                                                focus:border-blue-500
                                                focus:ring-2 focus:ring-blue-500/20
                                                dark:border-slate-700
                                                dark:bg-slate-800
-                                               dark:text-white
-                                               dark:placeholder-slate-500">
+                                               dark:text-white">
 
                                     @error('aadhaar_number')
                                         <p class="mt-1.5 text-sm text-red-500">
@@ -450,17 +455,16 @@
                                     </label>
 
                                     <input id="account_number" type="text" name="account_number"
-                                        value="{{ old('account_number') }}" required inputmode="numeric" maxlength="30"
-                                        autocomplete="off" placeholder="Enter bank account number"
+                                        value="{{ old('account_number', $warden->account_number) }}" required
+                                        inputmode="numeric" maxlength="30" autocomplete="off"
                                         class="w-full rounded-xl border border-slate-300
                                                bg-white px-4 py-3 text-sm text-slate-900
-                                               placeholder-slate-400 outline-none transition
+                                               outline-none transition
                                                focus:border-blue-500
                                                focus:ring-2 focus:ring-blue-500/20
                                                dark:border-slate-700
                                                dark:bg-slate-800
-                                               dark:text-white
-                                               dark:placeholder-slate-500">
+                                               dark:text-white">
 
                                     @error('account_number')
                                         <p class="mt-1.5 text-sm text-red-500">
@@ -482,14 +486,14 @@
                                         value="{{ old('ifsc_code', $warden->ifsc_code ?? '') }}" required maxlength="20"
                                         autocomplete="off" placeholder="Enter IFSC code"
                                         class="w-full rounded-xl border border-slate-300
-                                            bg-white px-4 py-3 text-sm text-slate-900
-                                            placeholder-slate-400 outline-none transition
-                                            focus:border-blue-500
-                                            focus:ring-2 focus:ring-blue-500/20
-                                            dark:border-slate-700
-                                            dark:bg-slate-800
-                                            dark:text-white
-                                            dark:placeholder-slate-500">
+                                                bg-white px-4 py-3 text-sm text-slate-900
+                                                placeholder-slate-400 outline-none transition
+                                                focus:border-blue-500
+                                                focus:ring-2 focus:ring-blue-500/20
+                                                dark:border-slate-700
+                                                dark:bg-slate-800
+                                                dark:text-white
+                                                dark:placeholder-slate-500">
 
                                     @error('ifsc_code')
                                         <p class="mt-1.5 text-sm text-red-500">
@@ -529,7 +533,7 @@
                                     </h2>
 
                                     <p class="text-xs text-slate-500 dark:text-slate-400">
-                                        These credentials will be used by the warden to log in.
+                                        Leave password empty to keep the current password.
                                     </p>
                                 </div>
 
@@ -542,19 +546,17 @@
 
                             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 
-
                                 {{-- Password --}}
                                 <div>
 
                                     <label for="password"
                                         class="mb-2 block text-sm font-semibold
                                                text-slate-700 dark:text-slate-300">
-                                        Password
-                                        <span class="text-red-500">*</span>
+                                        New Password
                                     </label>
 
-                                    <input id="password" type="password" name="password" required
-                                        autocomplete="new-password" placeholder="Enter password"
+                                    <input id="password" type="password" name="password" autocomplete="new-password"
+                                        placeholder="Enter new password"
                                         class="w-full rounded-xl border border-slate-300
                                                bg-white px-4 py-3 text-sm text-slate-900
                                                placeholder-slate-400 outline-none transition
@@ -584,12 +586,11 @@
                                     <label for="password_confirmation"
                                         class="mb-2 block text-sm font-semibold
                                                text-slate-700 dark:text-slate-300">
-                                        Confirm Password
-                                        <span class="text-red-500">*</span>
+                                        Confirm New Password
                                     </label>
 
                                     <input id="password_confirmation" type="password" name="password_confirmation"
-                                        required autocomplete="new-password" placeholder="Confirm password"
+                                        autocomplete="new-password" placeholder="Confirm new password"
                                         class="w-full rounded-xl border border-slate-300
                                                bg-white px-4 py-3 text-sm text-slate-900
                                                placeholder-slate-400 outline-none transition
@@ -616,13 +617,11 @@
                                sm:flex-row sm:items-center sm:justify-end
                                dark:border-slate-800 dark:bg-slate-950/50">
 
-                        {{-- Cancel --}}
-                        <a href="{{ route('wardens.index') }}"
+                        <a href="{{ route('wardens.show', $warden) }}"
                             class="inline-flex items-center justify-center
                                    rounded-xl border border-slate-300
                                    bg-white px-5 py-2.5 text-sm font-semibold
-                                   text-slate-700 transition
-                                   hover:bg-slate-100
+                                   text-slate-700 transition hover:bg-slate-100
                                    dark:border-slate-700
                                    dark:bg-slate-900
                                    dark:text-slate-300
@@ -630,21 +629,15 @@
                             Cancel
                         </a>
 
-
-                        {{-- Create --}}
                         <button type="submit"
                             class="inline-flex items-center justify-center gap-2
                                    rounded-xl bg-blue-600 px-6 py-2.5
                                    text-sm font-semibold text-white
-                                   shadow-sm transition
-                                   hover:bg-blue-500
+                                   shadow-sm transition hover:bg-blue-500
                                    focus:outline-none
-                                   focus:ring-2 focus:ring-blue-500/30
-                                   disabled:cursor-not-allowed
-                                   disabled:opacity-60"
-                            {{ $hostels->isEmpty() ? 'disabled' : '' }}>
-                            <span>+</span>
-                            Create Warden
+                                   focus:ring-2 focus:ring-blue-500/30">
+                            ✓
+                            Save Changes
                         </button>
 
                     </div>

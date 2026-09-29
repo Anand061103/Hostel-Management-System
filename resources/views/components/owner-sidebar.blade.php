@@ -70,7 +70,7 @@
 
 
             {{-- My Hostels --}}
-            <a href="{{ route('profile') }}"
+            <a href="{{ route('hostels.index') }}"
                 class="mb-2 flex items-center gap-3 rounded-lg
                        px-3 py-2.5 text-sm font-medium
                        text-slate-700 transition
@@ -86,7 +86,7 @@
 
 
             {{-- Wardens --}}
-            <a href="{{ route('wardens.create') }}"
+            <a href="{{ route('wardens.index') }}"
                 class="mb-2 flex items-center gap-3 rounded-lg
                        px-3 py-2.5 text-sm font-medium
                        text-slate-700 transition

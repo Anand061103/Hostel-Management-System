@@ -118,7 +118,7 @@
                             class="border-t border-slate-200 dark:border-slate-800
                                    mt-5 pt-4">
 
-                            <a href="{{ route('hostels.show', $hostel) }}"
+                            <a href="{{ route('owner.hostels.enter', $hostel) }}"
                                 class="block text-center w-full
                                        px-4 py-2.5 rounded-lg
                                        bg-blue-600 text-white

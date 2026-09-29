@@ -24,15 +24,15 @@ class OwnerController extends Controller
 
     if ($user->role === 'superadmin') {
 
-        // Admin is currently inside a hostel
+        // Super Admin is currently inside a hostel
         if (session('current_hostel_id')) {
 
             $hostel = Hostel::findOrFail(
                 session('current_hostel_id')
             );
 
-            // Find warden of this hostel
-           $warden = User::where('role', 'warden')
+            // Get the warden of current hostel
+            $warden = User::where('role', 'warden')
                 ->where('hostel_id', $hostel->id)
                 ->first();
 
@@ -40,10 +40,13 @@ class OwnerController extends Controller
                 'warden',
                 'hostel'
             ));
-                    }
+        }
 
-
-        // Admin Global Profile
+        /*
+        |--------------------------------------------------------------------------
+        | GLOBAL SUPER ADMIN PROFILE
+        |--------------------------------------------------------------------------
+        */
 
         $hostels = Hostel::where('status', 'active')
             ->latest()
@@ -68,10 +71,14 @@ class OwnerController extends Controller
             abort(403, 'No hostel is assigned to this account.');
         }
 
+        // Warden's own user record
+        $warden = $user;
+
+        // Assigned hostel
         $hostel = $user->hostel;
 
         return view('warden.profile', compact(
-            'user',
+            'warden',
             'hostel'
         ));
     }
@@ -80,6 +87,110 @@ class OwnerController extends Controller
     abort(403, 'Invalid user role.');
 }
 
+
+  public function editWardenProfile()
+{
+    $user = Auth::user();
+
+    if ($user->role !== 'warden') {
+        abort(403, 'Only wardens can access this page.');
+    }
+
+    if (!$user->hostel_id) {
+        abort(403, 'No hostel is assigned to this account.');
+    }
+
+    $warden = $user;
+    $hostel = $user->hostel;
+
+    return view('warden.profile-edit', compact(
+        'warden',
+        'hostel'
+    ));
+}
+
+public function updateWardenProfile(Request $request)
+{
+    $user = Auth::user();
+
+    if ($user->role !== 'warden') {
+        abort(403, 'Only wardens can update this profile.');
+    }
+
+    $validated = $request->validate([
+        'name' => [
+            'required',
+            'string',
+            'max:255',
+        ],
+
+        'email' => [
+            'required',
+            'email',
+            Rule::unique('users', 'email')
+                ->ignore($user->id),
+        ],
+
+        'mobile_number' => [
+            'nullable',
+            'string',
+            'max:15',
+        ],
+
+        'address' => [
+            'nullable',
+            'string',
+            'max:1000',
+        ],
+
+        'photo' => [
+            'nullable',
+            'image',
+            'mimes:jpg,jpeg,png,webp',
+            'max:2048',
+        ],
+    ]);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Update Basic Information
+    |--------------------------------------------------------------------------
+    */
+
+    $user->name = $validated['name'];
+    $user->email = $validated['email'];
+    $user->mobile_number = $validated['mobile_number'] ?? null;
+    $user->address = $validated['address'] ?? null;
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Update Profile Photo
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->hasFile('photo')) {
+
+        // Delete old photo
+        if ($user->photo) {
+            Storage::disk('public')->delete($user->photo);
+        }
+
+        // Store new photo
+        $user->photo = $request
+            ->file('photo')
+            ->store('wardens', 'public');
+    }
+
+
+    $user->save();
+
+
+    return redirect()
+        ->route('profile')
+        ->with('success', 'Profile updated successfully.');
+}
 
     public function enterHostel(Hostel $hostel)
     {

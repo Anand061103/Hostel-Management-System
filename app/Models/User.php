@@ -19,6 +19,8 @@ class User extends Authenticatable
     'address',
     'photo',
     'joining_date',
+    'aadhaar_number',
+    'account_number',
 ];
 
     protected $hidden = [

@@ -27,20 +27,23 @@ Route::get('/login', function () {
 Route::post('/login', [AuthController::class, 'login'])->name('login.authenticate');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-Route::get('/owner/profile', [OwnerController::class, 'profile'])->middleware('auth')->name('owner.profile');
 Route::get('/owner/hostels/{hostel}/enter', [OwnerController::class, 'enterHostel'])->middleware('auth')->name('owner.hostels.enter');
 
 
-
-
+//owner profile
 Route::get('/owner/profile', [OwnerController::class, 'profile'])->middleware('auth')->name('owner.profile');
-Route::get('/profile', [OwnerController::class, 'profile'])->middleware('auth')->name('profile');
+Route::get('/owner/profile', [OwnerController::class, 'profile'])->middleware('auth')->name('owner.profile');
 Route::get('/profile/edit', [OwnerController::class, 'editProfile'])->middleware('auth')->name('profile.edit');
 Route::put('/profile', [OwnerController::class, 'updateProfile'])->middleware('auth')->name('profile.update');
 Route::get('/profile/change-email', [OwnerController::class, 'editEmail'])->middleware('auth')->name('profile.email.edit');
 Route::put('/profile/change-email', [OwnerController::class, 'updateEmail'])->middleware('auth')->name('profile.email.update');
 Route::get('/profile/change-password', [OwnerController::class, 'editPassword'])->middleware('auth')->name('profile.password.edit');
 Route::put('/profile/change-password', [OwnerController::class, 'updatePassword'])->middleware('auth')->name('profile.password.update');
+//warden profile 
+Route::get('/profile', [OwnerController::class, 'profile'])->middleware('auth')->name('profile');
+Route::get('/profile', [OwnerController::class, 'profile'])->middleware('auth')->name('profile');
+Route::get('/profile/edit', [OwnerController::class, 'editWardenProfile'])->middleware('auth')->name('warden.profile.edit');
+Route::put('/profile', [OwnerController::class, 'updateWardenProfile'])->middleware('auth')->name('warden.profile.update');
 
 
 
@@ -85,8 +88,9 @@ Route::post('beds/{bed}/assign', [BedController::class, 'storeAssignment'])->nam
 
 Route::resource('hostels', HostelController::class);
 
-Route::get('/wardens/create', [WardenController::class, 'create'])->name('wardens.create');
-Route::post('/wardens', [WardenController::class, 'store'])->name('wardens.store');
+
+Route::resource('wardens', WardenController::class);
+
 
 Route::get('/hostel/dashboard', function () {
     $user = Auth::user();
