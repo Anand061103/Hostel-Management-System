@@ -872,13 +872,54 @@
 
                         order_id: data.order_id,
 
-                        handler: function(paymentResponse) {
+                        handler: async function(paymentResponse) {
 
-                            console.log('Razorpay Payment Response:', paymentResponse);
+                            try {
 
-                            alert(
-                                'Payment successful. Verification will be completed next.'
-                            );
+                                const verifyResponse = await fetch(
+                                    "{{ route('students.payment.verify', $student) }}", {
+                                        method: 'POST',
+
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'Accept': 'application/json',
+                                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                        },
+
+                                        body: JSON.stringify({
+                                            razorpay_payment_id: paymentResponse
+                                                .razorpay_payment_id,
+
+                                            razorpay_order_id: paymentResponse
+                                                .razorpay_order_id,
+
+                                            razorpay_signature: paymentResponse
+                                                .razorpay_signature
+                                        })
+                                    }
+                                );
+
+                                const result = await verifyResponse.json();
+
+                                if (!verifyResponse.ok || !result.success) {
+                                    throw new Error(
+                                        result.message || 'Payment verification failed.'
+                                    );
+                                }
+
+                                alert('Payment successful!');
+
+                                window.location.reload();
+
+                            } catch (error) {
+
+                                console.error(error);
+
+                                alert(
+                                    error.message ||
+                                    'Payment verification failed.'
+                                );
+                            }
                         },
 
                         modal: {

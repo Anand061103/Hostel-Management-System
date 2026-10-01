@@ -118,3 +118,4 @@ Route::post('/students/{student}/checkout/pay-fees', [CheckoutController::class,
 
 //student fees payment route
 Route::post('/students/{student}/payment/order', [PaymentController::class, 'createOrder'])->name('students.payment.order');
+Route::post('/students/{student}/payment/verify', [PaymentController::class, 'verifyPayment'])->name('students.payment.verify');
