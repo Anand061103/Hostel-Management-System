@@ -248,7 +248,7 @@
 
         {{-- Wardens Table --}}
         <div
-            class="overflow-hidden rounded-2xl border border-slate-800
+            class="mt-4 overflow-hidden rounded-2xl border border-slate-800
            bg-slate-900/70 shadow-xl shadow-black/10">
 
             <div class="overflow-x-auto">

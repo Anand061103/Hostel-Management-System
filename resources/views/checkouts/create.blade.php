@@ -243,7 +243,7 @@
                         Pay Outstanding Fee
                     </h3>
 
-                    <form action="{{ route('students.checkout.payFees', $student) }}" method="POST">
+                    <form id="feePaymentForm" action="{{ route('students.checkout.payFees', $student) }}" method="POST">
 
                         @csrf
 
@@ -279,7 +279,7 @@
                                     Payment Method
                                 </label>
 
-                                <select name="payment_method" required
+                                <select id="paymentMethod" name="payment_method" required
                                     class="w-full rounded-lg border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                                     <option value="">Select payment method</option>
                                     <option value="cash" {{ old('payment_method') === 'cash' ? 'selected' : '' }}>Cash
@@ -793,6 +793,119 @@
 
             updateRefund();
 
+        });
+    </script>
+
+
+
+    {{-- Razorpay --}}
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            const form = document.getElementById('feePaymentForm');
+            const paymentMethod = document.getElementById('paymentMethod');
+
+            if (!form || !paymentMethod) {
+                return;
+            }
+
+            form.addEventListener('submit', async function(event) {
+
+                // Cash / Bank / Card / Other
+                // Existing payment flow will continue normally.
+                if (paymentMethod.value !== 'upi') {
+                    return;
+                }
+
+                // Stop normal form submission for UPI
+                event.preventDefault();
+
+                const amountInput = form.querySelector('input[name="amount"]');
+                const amount = parseFloat(amountInput.value);
+
+                if (!amount || amount <= 0) {
+                    alert('Please enter a valid payment amount.');
+                    return;
+                }
+
+                try {
+
+                    // Create Razorpay order from Laravel
+                    const response = await fetch(
+                        "{{ route('students.payment.order', $student) }}", {
+                            method: 'POST',
+
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+
+                            body: JSON.stringify({
+                                amount: amount
+                            })
+                        }
+                    );
+
+                    const data = await response.json();
+
+                    if (!response.ok || !data.success) {
+                        throw new Error(
+                            data.message || 'Unable to create payment order.'
+                        );
+                    }
+
+                    // Razorpay Checkout
+                    const options = {
+
+                        key: data.key,
+
+                        amount: Math.round(data.amount * 100),
+
+                        currency: 'INR',
+
+                        name: 'Hostel Management System',
+
+                        description: 'Hostel Fee Payment',
+
+                        order_id: data.order_id,
+
+                        handler: function(paymentResponse) {
+
+                            console.log('Razorpay Payment Response:', paymentResponse);
+
+                            alert(
+                                'Payment successful. Verification will be completed next.'
+                            );
+                        },
+
+                        modal: {
+                            ondismiss: function() {
+                                console.log('Razorpay checkout closed.');
+                            }
+                        },
+
+                        theme: {
+                            color: '#2563eb'
+                        }
+                    };
+
+                    const razorpay = new Razorpay(options);
+
+                    razorpay.open();
+
+                } catch (error) {
+
+                    console.error(error);
+
+                    alert(
+                        error.message ||
+                        'Something went wrong while starting the payment.'
+                    );
+                }
+            });
         });
     </script>
 

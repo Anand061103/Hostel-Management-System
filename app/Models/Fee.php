@@ -7,8 +7,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\Student;
 use App\Models\FeePayment;
+use App\Models\PaymentOrder;
 class Fee extends Model
 {
+    
     protected $fillable = [
         'student_id',
         'fee_type',
@@ -46,5 +48,10 @@ class Fee extends Model
         public function getRemainingAmountAttribute()
         {
             return max(0, $this->amount - $this->paid_amount);
+        }
+
+        public function paymentOrders()
+        {
+            return $this->hasMany(PaymentOrder::class);
         }
 }

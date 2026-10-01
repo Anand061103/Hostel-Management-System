@@ -12,9 +12,11 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\WardenController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\PasswordRecoveryController;
-use App\Models\Hostel;
+use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Models\Hostel;
+
 
 Route::get('/signup', function () {
     return view('auth.signup');
@@ -32,15 +34,13 @@ Route::get('/owner/hostels/{hostel}/enter', [OwnerController::class, 'enterHoste
 
 //owner profile
 Route::get('/owner/profile', [OwnerController::class, 'profile'])->middleware('auth')->name('owner.profile');
-Route::get('/owner/profile', [OwnerController::class, 'profile'])->middleware('auth')->name('owner.profile');
-Route::get('/profile/edit', [OwnerController::class, 'editProfile'])->middleware('auth')->name('profile.edit');
-Route::put('/profile', [OwnerController::class, 'updateProfile'])->middleware('auth')->name('profile.update');
+Route::get('/owner/profile/edit', [OwnerController::class, 'editProfile'])->middleware('auth')->name('profile.edit');
+Route::put('/owner/profile', [OwnerController::class, 'updateProfile'])->middleware('auth')->name('profile.update');
 Route::get('/profile/change-email', [OwnerController::class, 'editEmail'])->middleware('auth')->name('profile.email.edit');
 Route::put('/profile/change-email', [OwnerController::class, 'updateEmail'])->middleware('auth')->name('profile.email.update');
 Route::get('/profile/change-password', [OwnerController::class, 'editPassword'])->middleware('auth')->name('profile.password.edit');
 Route::put('/profile/change-password', [OwnerController::class, 'updatePassword'])->middleware('auth')->name('profile.password.update');
 //warden profile 
-Route::get('/profile', [OwnerController::class, 'profile'])->middleware('auth')->name('profile');
 Route::get('/profile', [OwnerController::class, 'profile'])->middleware('auth')->name('profile');
 Route::get('/profile/edit', [OwnerController::class, 'editWardenProfile'])->middleware('auth')->name('warden.profile.edit');
 Route::put('/profile', [OwnerController::class, 'updateWardenProfile'])->middleware('auth')->name('warden.profile.update');
@@ -115,3 +115,6 @@ Route::get('/hostel/dashboard', function () {
 Route::get('/students/{student}/checkout', [CheckoutController::class, 'create'])->name('students.checkout.create');
 Route::post('/students/{student}/checkout', [CheckoutController::class, 'store'])->name('students.checkout.store');
 Route::post('/students/{student}/checkout/pay-fees', [CheckoutController::class, 'payFees'])->name('students.checkout.payFees');
+
+//student fees payment route
+Route::post('/students/{student}/payment/order', [PaymentController::class, 'createOrder'])->name('students.payment.order');
