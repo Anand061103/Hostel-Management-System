@@ -1,11 +1,14 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Modules\Hostel\Controllers;
 
-use App\Models\Bed;
-use App\Models\BedAssignment;
-use App\Models\Room;
-use App\Models\Student;
+use App\Http\Controllers\Controller;
+
+use App\Modules\Hostel\Models\Bed;
+use App\Modules\Hostel\Models\BedAssignment;
+use App\Modules\Hostel\Models\Room;
+use App\Modules\Hostel\Models\Student;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;

@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Modules\Hostel\Controllers;
 
-use App\Models\Hostel;
+use App\Http\Controllers\Controller;
+use App\Modules\Hostel\Models\Hostel;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;

@@ -1,14 +1,17 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Modules\Hostel\Controllers;
 
-use App\Models\Checkout;
-use App\Models\Student;
-use App\Models\Fee;
-use App\Models\SecurityDeposit;
-use App\Models\SecuritySettlement;
-use App\Models\BedAssignment;
-use App\Models\FeePayment;
+use App\Http\Controllers\Controller;
+
+use App\Modules\Hostel\Models\Checkout;
+use App\Modules\Hostel\Models\Student;
+use App\Modules\Hostel\Models\Fee;
+use App\Modules\Hostel\Models\SecurityDeposit;
+use App\Modules\Hostel\Models\SecuritySettlement;
+use App\Modules\Hostel\Models\BedAssignment;
+use App\Modules\Hostel\Models\FeePayment;
+
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;

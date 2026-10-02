@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Modules\Hostel\Controllers;
 
-use App\Models\Fee;
-use App\Models\FeePayment;
-use App\Models\PaymentOrder;
-use App\Models\Student;
+use App\Http\Controllers\Controller;
+use App\Modules\Hostel\Models\Fee;
+use App\Modules\Hostel\Models\FeePayment;
+use App\Modules\Hostel\Models\PaymentOrder;
+use App\Modules\Hostel\Models\Student;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -71,7 +72,6 @@ class PaymentController extends Controller
             'key' => config('services.razorpay.key'),
         ]);
     }
-
 
     /**
      * Verify Razorpay payment and record hostel fee payment.

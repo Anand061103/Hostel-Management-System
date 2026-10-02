@@ -1,28 +1,24 @@
 <?php
 
-namespace App\Models;
+namespace App\Modules\Hostel\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class BedAssignment extends Model
+class PaymentOrder extends Model
 {
     protected $fillable = [
-        'bed_id',
         'student_id',
-        'start_date',
-        'end_date',
+        'razorpay_order_id',
+        'amount',
+        'status',
+        'razorpay_payment_id',
+        'razorpay_signature',
     ];
 
     protected $casts = [
-        'start_date' => 'date',
-        'end_date' => 'date',
+        'amount' => 'decimal:2',
     ];
-
-    public function bed(): BelongsTo
-    {
-        return $this->belongsTo(Bed::class);
-    }
 
     public function student(): BelongsTo
     {

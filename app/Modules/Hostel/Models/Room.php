@@ -1,21 +1,21 @@
 <?php
 
-namespace App\Models;
-use App\Models\Bed;
-use App\Models\Hostel;
+namespace App\Modules\Hostel\Models;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Room extends Model
 {
-   protected $fillable = [
-    'room_number',
-    'floor',
-    'room_type',
-    'status',
-    'hostel_id',
-];
+    protected $fillable = [
+        'room_number',
+        'floor',
+        'room_type',
+        'status',
+        'hostel_id',
+    ];
+
     public function beds(): HasMany
     {
         return $this->hasMany(Bed::class);
@@ -25,8 +25,9 @@ class Room extends Model
     {
         return $this->belongsTo(Hostel::class);
     }
+
     public function checkouts()
-{
-    return $this->hasMany(Checkout::class);
-}
+    {
+        return $this->hasMany(Checkout::class);
+    }
 }

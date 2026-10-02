@@ -1,24 +1,25 @@
 <?php
 
-namespace App\Models;
+namespace App\Modules\Hostel\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class SecurityPayment extends Model
+class SecuritySettlement extends Model
 {
     protected $fillable = [
         'security_deposit_id',
-        'amount',
-        'payment_date',
-        'payment_method',
-        'reference_no',
-        'notes',
+        'deduction_amount',
+        'refund_amount',
+        'settlement_date',
+        'reason',
+        'status',
     ];
 
     protected $casts = [
-        'amount' => 'decimal:2',
-        'payment_date' => 'date',
+        'deduction_amount' => 'decimal:2',
+        'refund_amount' => 'decimal:2',
+        'settlement_date' => 'date',
     ];
 
     public function securityDeposit(): BelongsTo

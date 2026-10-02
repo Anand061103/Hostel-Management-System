@@ -1,16 +1,13 @@
 <?php
 
-namespace App\Models;
+namespace App\Modules\Hostel\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\Student;
-use App\Models\FeePayment;
-use App\Models\PaymentOrder;
+
 class Fee extends Model
 {
-    
     protected $fillable = [
         'student_id',
         'fee_type',
@@ -39,19 +36,18 @@ class Fee extends Model
         return $this->hasMany(FeePayment::class);
     }
 
+    public function getPaidAmountAttribute()
+    {
+        return $this->payments->sum('amount');
+    }
 
-            public function getPaidAmountAttribute()
-        {
-            return $this->payments->sum('amount');
-        }
+    public function getRemainingAmountAttribute()
+    {
+        return max(0, $this->amount - $this->paid_amount);
+    }
 
-        public function getRemainingAmountAttribute()
-        {
-            return max(0, $this->amount - $this->paid_amount);
-        }
-
-        public function paymentOrders()
-        {
-            return $this->hasMany(PaymentOrder::class);
-        }
+    public function paymentOrders()
+    {
+        return $this->hasMany(PaymentOrder::class);
+    }
 }

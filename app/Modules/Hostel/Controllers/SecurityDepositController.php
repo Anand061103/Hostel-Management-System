@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Modules\Hostel\Controllers;
 
-use App\Models\SecurityDeposit;
-use App\Models\SecurityPayment;
+use App\Http\Controllers\Controller;
+use App\Modules\Hostel\Models\SecurityDeposit;
+use App\Modules\Hostel\Models\SecurityPayment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;

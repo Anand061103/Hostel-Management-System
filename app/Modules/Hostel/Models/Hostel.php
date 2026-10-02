@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Models;
+namespace App\Modules\Hostel\Models;
+
 use App\Models\User;
-use App\Models\Student;
-use App\Models\Room;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 

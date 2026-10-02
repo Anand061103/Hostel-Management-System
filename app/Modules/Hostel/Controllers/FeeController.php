@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Modules\Hostel\Controllers;
 
-use App\Models\Fee;
-use App\Models\FeePayment;
-use App\Models\Student;
+use App\Http\Controllers\Controller;
+use App\Modules\Hostel\Models\Fee;
+use App\Modules\Hostel\Models\FeePayment;
+use App\Modules\Hostel\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -186,7 +187,7 @@ class FeeController extends Controller
                 throw ValidationException::withMessages([
                     'amount' => [
                         'Payment amount cannot be greater than the remaining amount of ₹'
-                        .number_format($remainingAmount, 2),
+                        . number_format($remainingAmount, 2),
                     ],
                 ]);
             }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Modules\Hostel\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -56,8 +56,9 @@ class Student extends Model
     {
         return $this->belongsTo(Hostel::class);
     }
+
     public function checkout()
-{
-    return $this->hasOne(Checkout::class);
-}
+    {
+        return $this->hasOne(Checkout::class);
+    }
 }

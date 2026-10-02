@@ -1,4 +1,3 @@
-```blade
 @php
     $authUser = auth()->user();
     $isLoggedIn = auth()->check();
@@ -9,7 +8,7 @@
     $currentHostel = null;
 
     if ($isLoggedIn && $isSuperAdmin && session('current_hostel_id')) {
-        $currentHostel = \App\Models\Hostel::find(session('current_hostel_id'));
+        $currentHostel = \App\Modules\Hostel\Models\Hostel::find(session('current_hostel_id'));
     }
 @endphp
 
@@ -61,7 +60,6 @@
         {{-- Right --}}
         <div class="flex items-center gap-5">
 
-
             {{-- Back to Global Panel --}}
             @if ($isLoggedIn && $isSuperAdmin && session('current_hostel_id'))
                 <a href="{{ route('owner.exitHostel') }}"
@@ -100,9 +98,7 @@
 
             {{-- Theme Toggle --}}
             <button id="theme-toggle" type="button">
-
                 <span id="theme-icon">🌙</span>
-
             </button>
 
 
@@ -133,7 +129,7 @@
                     $profileUser = $authUser;
 
                     if ($isSuperAdmin && session('current_hostel_id')) {
-                        $profileHostel = \App\Models\Hostel::find(session('current_hostel_id'));
+                        $profileHostel = \App\Modules\Hostel\Models\Hostel::find(session('current_hostel_id'));
 
                         $profileUser = $profileHostel
                             ? $profileHostel->users()->where('role', 'warden')->first()

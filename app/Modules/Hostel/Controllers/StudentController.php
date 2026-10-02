@@ -1,21 +1,21 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Modules\Hostel\Controllers;
 
-use App\Models\Bed;
-use App\Models\BedAssignment;
-use App\Models\Fee;
-use App\Models\FeePayment;
-use App\Models\Room;
-use App\Models\SecurityDeposit;
-use App\Models\SecurityPayment;
-use App\Models\Student;
+use App\Http\Controllers\Controller;
+use App\Modules\Hostel\Models\Bed;
+use App\Modules\Hostel\Models\BedAssignment;
+use App\Modules\Hostel\Models\Fee;
+use App\Modules\Hostel\Models\FeePayment;
+use App\Modules\Hostel\Models\Room;
+use App\Modules\Hostel\Models\SecurityDeposit;
+use App\Modules\Hostel\Models\SecurityPayment;
+use App\Modules\Hostel\Models\Student;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-
 class StudentController extends Controller
 {
     /**
