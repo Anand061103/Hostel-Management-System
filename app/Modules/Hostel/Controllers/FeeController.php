@@ -106,7 +106,7 @@ class FeeController extends Controller
             ])
             ->count();
 
-        return view('fees.index', compact(
+        return view('hostel.fees.index', compact(
             'fees',
             'totalFeeAmount',
             'totalPaid',
@@ -126,7 +126,7 @@ class FeeController extends Controller
             ->orderBy('full_name')
             ->get();
 
-        return view('fees.create', compact('students'));
+        return view('hostel.fees.create', compact('students'));
     }
 
     /**
@@ -237,7 +237,7 @@ class FeeController extends Controller
 
         $this->ensureFeeAccess($fee);
 
-        return view('fees.show', compact('fee'));
+        return view('hostel.fees.show', compact('fee'));
     }
 
     public function edit(string $id)

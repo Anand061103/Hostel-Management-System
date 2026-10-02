@@ -118,7 +118,7 @@ class SecurityDepositController extends Controller
 
 
         return view(
-            'security_deposits.index',
+             'hostel.security-deposits.index',
             compact(
                 'securityDeposits',
                 'totalRequired',
@@ -159,7 +159,7 @@ class SecurityDepositController extends Controller
         ]);
 
         return view(
-            'security_deposits.show',
+            'hostel.security-deposits.show',
             compact('securityDeposit')
         );
     }

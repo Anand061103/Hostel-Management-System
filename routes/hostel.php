@@ -48,7 +48,7 @@ Route::middleware('auth')->group(function () {
         $hostel = Hostel::findOrFail($hostelId);
 
         return view(
-            'dashboard.hostel',
+            'hostel.dashboard.index',
             compact('user', 'hostel')
         );
 

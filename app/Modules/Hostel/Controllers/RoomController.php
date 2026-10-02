@@ -104,7 +104,7 @@ class RoomController extends Controller
 
         $currentFloorName = $floors[$floor] ?? "Floor $floor";
 
-        return view('rooms.index', compact(
+        return view('hostel.rooms.index', compact(
             'rooms',
             'floor',
             'floors',
@@ -131,7 +131,7 @@ class RoomController extends Controller
             5 => 'Fifth Floor',
         ];
 
-        return view('rooms.create', compact('floor', 'floors'));
+        return view('hostel.rooms.create', compact('floor', 'floors'));
     }
 
 
@@ -263,7 +263,7 @@ class RoomController extends Controller
             ->orderBy('full_name')
             ->get();
 
-        return view('rooms.show', compact(
+        return view('hostel.rooms.show', compact(
             'room',
             'students'
         ));
@@ -286,7 +286,7 @@ class RoomController extends Controller
             5 => 'Fifth Floor',
         ];
 
-        return view('rooms.edit', compact(
+        return view('hostel.rooms.edit', compact(
             'room',
             'floors'
         ));

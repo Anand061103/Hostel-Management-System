@@ -32,7 +32,7 @@ class DashboardController extends Controller
                     session('current_hostel_id')
                 );
 
-                return view('dashboard.hostel', compact(
+                return view('hostel.dashboard.index', compact(
                     'user',
                     'hostel'
                 ));
@@ -57,7 +57,7 @@ class DashboardController extends Controller
                 $totalFeeAmount - $totalPaid
             );
 
-            return view('dashboard.index', compact(
+            return view('owner.dashboard.index', compact(
                 'user',
                 'totalHostels',
                 'totalStudents',
@@ -83,7 +83,7 @@ class DashboardController extends Controller
                 abort(403, 'No hostel is assigned to this account.');
             }
 
-            return view('dashboard.hostel', compact(
+            return view('hostel.dashboard.index', compact(
                 'user',
                 'hostel'
             ));

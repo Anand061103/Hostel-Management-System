@@ -36,7 +36,7 @@ class OwnerController extends Controller
                 ->where('hostel_id', $hostel->id)
                 ->first();
 
-            return view('warden.profile', compact(
+            return view('hostel.warden.profile', compact(
                 'warden',
                 'hostel'
             ));
@@ -77,7 +77,7 @@ class OwnerController extends Controller
         // Assigned hostel
         $hostel = $user->hostel;
 
-        return view('warden.profile', compact(
+        return view('hostel.warden.profile', compact(
             'warden',
             'hostel'
         ));
@@ -103,7 +103,7 @@ class OwnerController extends Controller
     $warden = $user;
     $hostel = $user->hostel;
 
-    return view('warden.profile-edit', compact(
+    return view('hostel.warden.profile-edit', compact(
         'warden',
         'hostel'
     ));

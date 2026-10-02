@@ -143,7 +143,7 @@ class BedController extends Controller
             ->count();
 
 
-        return view('beds.index', compact(
+        return view('hostel.beds.index', compact(
             'beds',
             'totalBeds',
             'availableBeds',
@@ -164,7 +164,7 @@ class BedController extends Controller
             ->orderBy('room_number')
             ->get();
 
-        return view('beds.create', compact('rooms'));
+        return view('hostel.beds.create', compact('rooms'));
     }
 
     /**
@@ -256,7 +256,7 @@ class BedController extends Controller
 
         $this->ensureBedAccess($bed);
 
-        return view('beds.show', compact('bed'));
+        return view('hostel.beds.show', compact('bed'));
     }
 
     /**
@@ -273,7 +273,7 @@ class BedController extends Controller
             ->orderBy('room_number')
             ->get();
 
-        return view('beds.edit', compact(
+        return view('hostel.beds.edit', compact(
             'bed',
             'rooms'
         ));
@@ -446,7 +446,7 @@ class BedController extends Controller
 
 
         return view(
-            'beds.assign',
+            'hostel.beds.assign',
             compact('bed', 'students')
         );
     }

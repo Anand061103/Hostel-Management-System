@@ -57,7 +57,7 @@ class WardenController extends Controller
         ->orderBy('name')
         ->get();
 
-    return view('wardens.index', compact(
+    return view('owner.wardens.index', compact(
         'wardens',
         'totalWardens',
         'assignedWardens',
@@ -82,7 +82,7 @@ class WardenController extends Controller
         ->orderBy('name')
         ->get();
 
-    return view('wardens.create', compact('hostels'));
+    return view('owner.wardens.create', compact('hostels'));
 }
 
     /**
@@ -190,7 +190,7 @@ class WardenController extends Controller
 
         $warden->load('hostel');
 
-        return view('wardens.show', compact('warden'));
+        return view('owner.wardens.show', compact('warden'));
     }
 
 
@@ -216,7 +216,7 @@ class WardenController extends Controller
         ->orderBy('name')
         ->get();
 
-    return view('wardens.edit', compact('warden', 'hostels'));
+    return view('owner.wardens.edit', compact('warden', 'hostels'));
 }
 
 

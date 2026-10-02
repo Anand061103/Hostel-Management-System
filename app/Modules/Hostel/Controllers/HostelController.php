@@ -17,7 +17,7 @@ class HostelController extends Controller
     {
         $hostels = Hostel::latest()->get();
 
-        return view('hostels.index', compact('hostels'));
+        return view('owner.hostels.index', compact('hostels'));
     }
 
     /**
@@ -25,7 +25,7 @@ class HostelController extends Controller
      */
     public function create()
     {
-        return view('hostels.create');
+        return view('owner.hostels.create');
     }
 
     /**

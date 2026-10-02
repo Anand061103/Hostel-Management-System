@@ -97,7 +97,7 @@ class StudentController extends Controller
             ->latest()
             ->paginate(10);
 
-        return view('students.index', compact('students'));
+        return view('hostel.students.index', compact('students'));
     }
 
     /**
@@ -149,7 +149,7 @@ class StudentController extends Controller
             ->orderBy('room_number')
             ->get();
 
-        return view('students.create', compact('floors', 'rooms'));
+        return view('hostel.students.create', compact('floors', 'rooms'));
     }
 
     /**
@@ -504,7 +504,7 @@ class StudentController extends Controller
     {
         $this->ensureStudentAccess($student);
 
-        return view('students.show', compact('student'));
+        return view('hostel.students.show', compact('student'));
     }
 
     /**
@@ -514,7 +514,7 @@ class StudentController extends Controller
     {
         $this->ensureStudentAccess($student);
 
-        return view('students.edit', compact('student'));
+        return view('hostel.students.edit', compact('student'));
     }
 
     /**

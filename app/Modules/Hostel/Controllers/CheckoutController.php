@@ -226,7 +226,7 @@ class CheckoutController extends Controller
 
         $canCheckout = $feeOutstanding <= 10;
 
-        return view('checkouts.create', compact(
+        return view('hostel.checkouts.create', compact(
             'student',
             'assignment',
 
