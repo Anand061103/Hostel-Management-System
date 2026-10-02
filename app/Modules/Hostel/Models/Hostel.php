@@ -8,13 +8,19 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Hostel extends Model
 {
-    protected $fillable = [
-        'name',
-        'address',
-        'phone',
-        'email',
-        'status',
-    ];
+   protected $fillable = [
+    'owner_id',
+    'name',
+    'photo',
+    'address',
+    'city',
+    'state',
+    'pincode',
+    'type',
+    'phone',
+    'email',
+    'status',
+];
 
     public function users(): HasMany
     {

@@ -10,6 +10,8 @@ use App\Modules\Hostel\Controllers\RoomController;
 use App\Modules\Hostel\Controllers\SecurityDepositController;
 use App\Modules\Hostel\Controllers\StudentController;
 use App\Modules\Hostel\Controllers\WardenController;
+use App\Modules\Hostel\Controllers\HostelPlanController;
+use App\Modules\Hostel\Controllers\OwnerOnboardingController;
 use App\Modules\Hostel\Models\Hostel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -212,3 +214,24 @@ Route::middleware('auth')->group(function () {
     );
 
 });
+
+/*
+|--------------------------------------------------------------------------
+| Hostel Plans
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/hostel/plans', [HostelPlanController::class, 'index'])
+    ->name('hostel.plans');
+
+Route::post('/hostel/plans/select', [HostelPlanController::class, 'select'])
+    ->name('hostel.plans.select');
+
+Route::post('/hostel/plans/payment/verify', [HostelPlanController::class, 'verifyPayment'])
+    ->name('hostel.plans.payment.verify');
+
+Route::get('/hostel/onboarding', [OwnerOnboardingController::class, 'index'])
+    ->name('hostel.onboarding');
+
+Route::post('/hostel/onboarding', [OwnerOnboardingController::class, 'store'])
+    ->name('hostel.onboarding.store');

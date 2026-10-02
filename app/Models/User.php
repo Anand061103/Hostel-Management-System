@@ -10,19 +10,26 @@ class User extends Authenticatable
 {
     use Notifiable;
 
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'role',
-        'hostel_id',
-        'mobile_number',
-        'address',
-        'photo',
-        'joining_date',
-        'aadhaar_number',
-        'account_number',
-    ];
+   protected $fillable = [
+    'name',
+    'email',
+    'password',
+    'role',
+    'hostel_id',
+
+    'mobile_number',
+    'management_type',
+    'pan_number',
+
+    'bank_account_holder_name',
+    'account_number',
+    'ifsc_code',
+
+    'address',
+    'photo',
+    'joining_date',
+    'aadhaar_number',
+  ];
 
     protected $hidden = [
         'password',
@@ -42,4 +49,8 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Hostel::class);
     }
+    public function subscriptions()
+{
+    return $this->hasMany(\App\Models\Subscription::class);
+}
 }
