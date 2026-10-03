@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Modules\Hostel\Models\Hostel;
+use App\Modules\Apartment\Models\Apartment;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -50,7 +51,12 @@ class User extends Authenticatable
         return $this->belongsTo(Hostel::class);
     }
     public function subscriptions()
-{
-    return $this->hasMany(\App\Models\Subscription::class);
-}
+        {
+            return $this->hasMany(\App\Models\Subscription::class);
+        }
+
+        public function apartments()
+        {
+            return $this->hasMany(Apartment::class, 'owner_id');
+        }
 }

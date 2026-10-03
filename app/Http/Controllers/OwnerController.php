@@ -12,7 +12,7 @@ use Illuminate\Validation\Rule;
 
 class OwnerController extends Controller
 {
-    public function profile()
+   public function profile()
 {
     $user = Auth::user();
 
@@ -24,31 +24,20 @@ class OwnerController extends Controller
 
     if ($user->role === 'superadmin') {
 
-        // Super Admin is currently inside a hostel
-        if (session('current_hostel_id')) {
+        // existing code...
+    }
 
-            $hostel = Hostel::findOrFail(
-                session('current_hostel_id')
-            );
 
-            // Get the warden of current hostel
-            $warden = User::where('role', 'warden')
-                ->where('hostel_id', $hostel->id)
-                ->first();
+    /*
+    |--------------------------------------------------------------------------
+    | OWNER
+    |--------------------------------------------------------------------------
+    */
 
-            return view('hostel.warden.profile', compact(
-                'warden',
-                'hostel'
-            ));
-        }
+    if ($user->role === 'owner') {
 
-        /*
-        |--------------------------------------------------------------------------
-        | GLOBAL SUPER ADMIN PROFILE
-        |--------------------------------------------------------------------------
-        */
-
-        $hostels = Hostel::where('status', 'active')
+        $hostels = Hostel::where('owner_id', $user->id)
+            ->where('status', 'active')
             ->latest()
             ->get();
 
@@ -67,20 +56,7 @@ class OwnerController extends Controller
 
     if ($user->role === 'warden') {
 
-        if (!$user->hostel_id) {
-            abort(403, 'No hostel is assigned to this account.');
-        }
-
-        // Warden's own user record
-        $warden = $user;
-
-        // Assigned hostel
-        $hostel = $user->hostel;
-
-        return view('hostel.warden.profile', compact(
-            'warden',
-            'hostel'
-        ));
+        // existing code...
     }
 
 
